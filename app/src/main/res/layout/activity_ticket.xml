@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightGray"
+    tools:context=".activity.TicketActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/backBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="48dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:srcCompat="@drawable/back_white" />
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ticket Detail"
+                    android:textColor="@color/darkBlue"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="@+id/backBtn"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/backBtn" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/white_bg"
+                android:layout_margin="24dp"
+                android:orientation="vertical">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_margin="16dp"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/textView6"
+                        android:layout_width="110dp"
+                        android:layout_height="30dp"
+                        android:gravity="center"
+                        android:background="@drawable/light_purple_bg"
+                        android:text="@string/upcoming_trip"
+                        android:textColor="@color/purple"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/textView8"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Order Id:987654"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:layout_margin="16dp"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/roundedCorner"
+                    android:id="@+id/pic"
+                    android:layout_width="match_parent"
+                    android:layout_height="155dp"
+                    tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+                <TextView
+                    android:id="@+id/titleTxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title"
+                    android:layout_marginHorizontal="16dp"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/darkBlue"/>
+
+                <TextView
+                    android:id="@+id/textView12"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/show_this_ticket_to_the_your_guide_before_departure"
+                    android:textSize="12sp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/darkBlue"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/guestTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="0"
+                        android:textStyle="bold"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="@+id/textView20"
+                        app:layout_constraintTop_toBottomOf="@+id/textView20" />
+
+                    <TextView
+                        android:id="@+id/textView20"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/total_guest"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="@+id/timeTxt"
+                        app:layout_constraintTop_toBottomOf="@+id/timeTxt" />
+
+                    <TextView
+                        android:id="@+id/timeTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="0"
+                        android:textStyle="bold"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="@+id/textView18"
+                        app:layout_constraintTop_toBottomOf="@+id/textView18" />
+
+                    <TextView
+                        android:id="@+id/textView18"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="48dp"
+                        android:text="@string/time"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/durationTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="-"
+                        android:textStyle="bold"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textView16" />
+
+                    <TextView
+                        android:id="@+id/textView16"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/tip_duration"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tourGuideTxt" />
+
+                    <TextView
+                        android:id="@+id/textView13"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/tour_guide"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tourGuideTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="-"
+                        android:textColor="@color/darkBlue"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textView13" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:padding="12dp"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/stroke_bg"
+                    android:layout_height="match_parent">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        app:shapeAppearanceOverlay="@style/roundedFullCorner"
+                        android:id="@+id/profile"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:srcCompat="@tools:sample/avatars" />
+
+                    <TextView
+                        android:id="@+id/textView22"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Tour Guid"
+                        android:textColor="@color/darkBlue"
+                        app:layout_constraintStart_toEndOf="@+id/profile"
+                        app:layout_constraintTop_toTopOf="@+id/profile" />
+
+                    <TextView
+                        android:id="@+id/tourGuideNameTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Name"
+                        android:textColor="@color/darkBlue"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="@+id/profile"
+                        app:layout_constraintStart_toStartOf="@+id/textView22" />
+
+                    <ImageView
+                        android:id="@+id/messageBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        app:layout_constraintBottom_toBottomOf="@+id/callBtn"
+                        app:layout_constraintEnd_toStartOf="@+id/callBtn"
+                        app:layout_constraintTop_toTopOf="@+id/callBtn"
+                        app:srcCompat="@drawable/message" />
+
+                    <ImageView
+                        android:id="@+id/callBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="@+id/profile"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/profile"
+                        app:srcCompat="@drawable/call" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <ImageView
+                    android:id="@+id/imageView12"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    app:srcCompat="@drawable/dash_line" />
+
+                <ImageView
+                    android:id="@+id/imageView13"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/barcode" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    style="@android:style/Widget.Button"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/purple_bg"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:id="@+id/button2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/download_ticket" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

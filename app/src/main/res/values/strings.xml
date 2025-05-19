@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">TravelApp</string>
+    <string name="search">Search</string>
+    <string name="see_all">See all</string>
+    <string name="recommended">Recommended</string>
+    <string name="popular_destination">Popular Destination</string>
+    <string name="address_city">Address, City...</string>
+    <string name="upcoming_trip">Upcoming trip</string>
+    <string name="show_this_ticket_to_the_your_guide_before_departure">Show this ticket to the your guide before departure</string>
+    <string name="tour_guide">Tour Guide</string>
+    <string name="time">Time</string>
+    <string name="tip_duration">Tip Duration</string>
+    <string name="total_guest">Total Guest</string>
+    <string name="title">Title</string>
+    <string name="download_ticket">Download Ticket</string>
+</resources>
