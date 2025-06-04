@@ -1,4 +1,4 @@
-package vn.edu.hcmuaf.fit.travelapp.activityAuthentication;
+package vn.edu.hcmuaf.fit.travelapp.auth.presentation;
 
 import android.os.Bundle;
 
