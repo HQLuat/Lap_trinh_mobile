@@ -135,7 +135,7 @@ public class AddEditProductActivity extends AppCompatActivity {
     public void onSaveProductClick(View view) {
         Product product = new Product();
 
-        // check product's information
+        // check product information
         try {
             String name = binding.etProductName.getText().toString();
             String description = binding.etProductDescription.getText().toString();
