@@ -19,31 +19,43 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
-import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityAddProductBinding;
+import vn.edu.hcmuaf.fit.travelapp.R;
+import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityAddEditProductBinding;
 import vn.edu.hcmuaf.fit.travelapp.product.data.model.Product;
 import vn.edu.hcmuaf.fit.travelapp.product.viewmodel.ProductViewModel;
 
-public class AddProductActivity extends AppCompatActivity {
+public class AddEditProductActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final int REQUEST_STORAGE_PERMISSION = 100;
     private ProductViewModel viewModel;
     private Uri imageUri;
     private Calendar departureCalendar;
-    private ActivityAddProductBinding binding;
+    private ActivityAddEditProductBinding binding;
+    private boolean isEditMode;
+    private Product existingProduct;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // initialize binding, viewModel, calendar
-        binding = ActivityAddProductBinding.inflate(getLayoutInflater());
+        binding = ActivityAddEditProductBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        init();
+
+        setupUiForMode();
+        setupObservers();
+    }
+
+    public void init() {
+        // initialize calendar
         departureCalendar = Calendar.getInstance();
 
         // initialize viewModel
@@ -51,18 +63,53 @@ public class AddProductActivity extends AppCompatActivity {
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
                 .get(ProductViewModel.class);
 
-        // select date event
-        binding.etDepartureDate.setOnClickListener(v -> showDatePicker());
+        Intent intent = getIntent();
 
-        // Observe success
+        // Get individual fields from intent
+        String productId = intent.getStringExtra("productId");
+        String name = intent.getStringExtra("name");
+        String description = intent.getStringExtra("description");
+        double price = intent.getDoubleExtra("price", 0);
+        String imageUrl = intent.getStringExtra("imageUrl");
+        int stock = intent.getIntExtra("stock", 0);
+        long departureDateMillis = intent.getLongExtra("departureDate", -1);
+        boolean isActive = intent.getBooleanExtra("isActive", true);
+
+        // Create new Product object if data exists
+        if (productId != null) {
+            existingProduct = new Product();
+            existingProduct.setProductId(productId);
+            existingProduct.setName(name);
+            existingProduct.setDescription(description);
+            existingProduct.setPrice(price);
+            existingProduct.setImageUrl(imageUrl);
+            existingProduct.setStock(stock);
+            if (departureDateMillis != -1) {
+                existingProduct.setDepartureDate(new Timestamp(new Date(departureDateMillis)));
+            }
+            existingProduct.setActive(isActive);
+
+            isEditMode = true;
+        } else {
+            isEditMode = false;
+        }
+    }
+
+    private void setupUiForMode() {
+        binding.btnAddProduct.setText(isEditMode ? "Cập nhật sản phẩm" : "Thêm sản phẩm");
+        binding.tvTitle.setText(isEditMode ? "Cập nhật sản phẩm" : "Thêm sản phẩm");
+        binding.etDepartureDate.setOnClickListener(v -> showDatePicker());
+        if(isEditMode) populateForm(existingProduct);
+    }
+
+    private void setupObservers() {
         viewModel.getIsSuccess().observe(this, isSuccess -> {
             if (isSuccess != null && isSuccess) {
-                Toast.makeText(this, "Thêm sản phẩm thành công!", Toast.LENGTH_SHORT).show();
-//                finish();
+                setResult(RESULT_OK);
+                finish();
             }
         });
 
-        // Observe error message
         viewModel.getErrorMessage().observe(this, error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
@@ -85,7 +132,7 @@ public class AddProductActivity extends AppCompatActivity {
     }
 
     // add product event
-    public void onAddProductClick(View view) {
+    public void onSaveProductClick(View view) {
         Product product = new Product();
 
         // check product's information
@@ -103,14 +150,22 @@ public class AddProductActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập giá và số lượng hợp lệ", Toast.LENGTH_SHORT).show();
         }
 
-        // check image
-        if (imageUri == null) {
-            Toast.makeText(this, "Vui lòng chọn ảnh sản phẩm", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // mode
+        if (isEditMode) {
+            // update product
+            product.setProductId(existingProduct.getProductId());
+            product.setImageUrl(existingProduct.getImageUrl());
+            viewModel.updateProduct(product, imageUri);
+        } else {
+            // check image
+            if (imageUri == null) {
+                Toast.makeText(this, "Vui lòng chọn ảnh sản phẩm", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        // add product
-        viewModel.addProduct(product, imageUri);
+            // add product
+            viewModel.addProduct(product, imageUri);
+        }
     }
 
     // on click select image
@@ -179,4 +234,28 @@ public class AddProductActivity extends AppCompatActivity {
                 }
             }
     );
+
+    // load product information
+    private void populateForm (Product product) {
+        binding.etProductName.setText(product.getName());
+        binding.etProductDescription.setText(product.getDescription());
+        binding.etProductPrice.setText(String.valueOf(product.getPrice()));
+        binding.etProductStock.setText(String.valueOf(product.getStock()));
+
+        // Convert Timestamp to String
+        Date departureDate = product.getDepartureDate().toDate();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+        String formattedDate = sdf.format(departureDate);
+        binding.etDepartureDate.setText(formattedDate);
+
+        // load image into imageView
+        Glide.with(this)
+                .load(product.getImageUrl())
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_picture)
+                .into(binding.ivProductImage);
+
+        // hide icon
+        binding.ivAddIcon.setVisibility(View.GONE);
+    }
 }

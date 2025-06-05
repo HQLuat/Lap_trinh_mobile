@@ -2,16 +2,21 @@ package vn.edu.hcmuaf.fit.travelapp.product.data.repository;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.UUID;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -22,7 +27,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import vn.edu.hcmuaf.fit.travelapp.product.data.datasource.CloudinaryApi;
+import vn.edu.hcmuaf.fit.travelapp.product.data.datasource.DeleteCallback;
 import vn.edu.hcmuaf.fit.travelapp.product.data.datasource.UploadCallback;
+import vn.edu.hcmuaf.fit.travelapp.product.data.model.CloudinaryDeleteResponse;
 import vn.edu.hcmuaf.fit.travelapp.product.data.model.CloudinaryUploadResponse;
 import vn.edu.hcmuaf.fit.travelapp.product.data.model.Product;
 
@@ -35,7 +42,25 @@ public class ProductRepository {
         productsRef = db.collection("products");
     }
 
-    // Add new product and return ID of newly created product
+    // get all products
+    public Task<QuerySnapshot> getProducts() {
+        return productsRef.get();
+    }
+
+    // delete product
+    public void deleteProduct(String productId, OnCompleteListener<Void> listener) {
+        db.collection("products").document(productId)
+                .delete()
+                .addOnCompleteListener(listener);
+    }
+
+    // Update product
+    public Task<Void> updateProduct(Product product) {
+        return productsRef.document(product.getProductId())
+                .set(product, SetOptions.merge());
+    }
+
+    // add new product and return ID of newly created product
     public Task<String> addProduct(Product product) {
         // Create new document with automatic ID
         DocumentReference newProductRef = productsRef.document();
@@ -49,7 +74,7 @@ public class ProductRepository {
                 .update("imageUrl", imageUrl);
     }
 
-    // Upload image to Cloudinary and return URL
+    // upload image to Cloudinary and return URL
     public void uploadImageToCloudinary(Context context, Uri imageUri, String productId, UploadCallback callback) {
         String cloudName = "dbpvcjmk0";
         String uploadPreset = "unsigned_preset_1";
@@ -93,6 +118,56 @@ public class ProductRepository {
 
         } catch (IOException e) {
             callback.onFailure(e);
+        }
+    }
+
+    public void deleteImageFromCloudinary(Context context, String publicId, DeleteCallback callback) {
+        String cloudName = "dbpvcjmk0";
+
+        String apiKey = "599825456567849";
+        String apiSecret = "gN40yfRK0VrKQRXDYB1rZho4UEY";
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+
+        String toSign = "public_id=" + publicId + "&timestamp=" + timestamp + apiSecret;
+
+        String signature = sha1(toSign);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.cloudinary.com/v1_1/" + cloudName + "/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        CloudinaryApi api = retrofit.create(CloudinaryApi.class);
+
+        api.deleteImage(publicId, apiKey, timestamp, signature).enqueue(new Callback<CloudinaryDeleteResponse>() {
+            @Override
+            public void onResponse(Call<CloudinaryDeleteResponse> call, Response<CloudinaryDeleteResponse> response) {
+                if (response.isSuccessful() && response.body() != null && "ok".equalsIgnoreCase(response.body().getResult())) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure(new Exception("Delete failed: " + response.body().getResult()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CloudinaryDeleteResponse> call, Throwable t) {
+                callback.onFailure(new Exception("Delete failed: response not successful"));
+            }
+        });
+    }
+
+    private String sha1(String input) {
+        try {
+            MessageDigest mDigest = MessageDigest.getInstance("SHA-1");
+            byte[] result = mDigest.digest(input.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : result) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-1 algorithm not found");
         }
     }
 }
