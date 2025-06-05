@@ -17,6 +17,7 @@
         android:clipToPadding="false">
 
         <TextView
+            android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Thêm Sản Phẩm"
@@ -102,7 +103,7 @@
             android:textColor="@color/white"
             android:backgroundTint="@color/darkBlue"
             android:paddingVertical="12dp"
-            android:onClick="onAddProductClick" />
+            android:onClick="onSaveProductClick" />
 
     </LinearLayout>
 </ScrollView>

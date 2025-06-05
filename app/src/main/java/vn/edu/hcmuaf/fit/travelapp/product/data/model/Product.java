@@ -2,7 +2,9 @@ package vn.edu.hcmuaf.fit.travelapp.product.data.model;
 
 import com.google.firebase.Timestamp;
 
-public class Product {
+import java.io.Serializable;
+
+public class Product implements Serializable {
     private String productId;
     private String name;
     private String description;
