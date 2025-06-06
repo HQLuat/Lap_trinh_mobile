@@ -91,6 +91,7 @@ public class PaymentActivity extends AppCompatActivity {
                             Log.d("ZaloPayDebug", "Payment Success: " + s + " | " + s1 + " | " + s2);
                             Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
                             intent1.putExtra("result","Thanh toán thành công");
+                            startActivity(intent1);
                         }
 
                         @Override
@@ -98,6 +99,7 @@ public class PaymentActivity extends AppCompatActivity {
                             Log.d("ZaloPayDebug", "Payment Canceled: " + s + " | " + s1);
                             Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
                             intent1.putExtra("result","Huỷ thanh toán");
+                            startActivity(intent1);
                         }
 
                         @Override
@@ -105,6 +107,7 @@ public class PaymentActivity extends AppCompatActivity {
                             Log.e("ZaloPayDebug", "Payment Error: " + zaloPayError.toString() + " | " + s + " | " + s1);
                             Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
                             intent1.putExtra("result","Lỗi thanh toán");
+                            startActivity(intent1);
                         }
                     });
                 }else {
