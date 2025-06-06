@@ -1,6 +1,5 @@
 package vn.edu.hcmuaf.fit.travelapp.product.home.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -9,11 +8,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityDetailBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.Item;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.Product;
 
 public class DetailActivity extends AppCompatActivity {
     ActivityDetailBinding binding;
-    private Item object;
+    private Product product;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,29 +26,29 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void setVariable() {
-        binding.titleTxt.setText(object.getTitle());
-        binding.priceTxt.setText("$" + object.getPrice());
+        binding.titleTxt.setText(product.getName());
+        binding.priceTxt.setText(product.getPrice() + "đ");
         binding.backBtn.setOnClickListener(v -> finish());
-        binding.bedTxt.setText("" + object.getBed());
-        binding.durationTxt.setText(object.getDuration());
-        binding.distanceTxt.setText(object.getDistance());
-        binding.descriptionTxt.setText(object.getDescription());
-        binding.addressTxt.setText(object.getAddress());
-        binding.ratingBar.setRating((float) object.getScore());
-        binding.ratingTxt.setText(object.getScore() + " Rating");
+        binding.bedTxt.setText("2");
+        binding.durationTxt.setText("2 ngay 1 dem");
+        binding.distanceTxt.setText("5");
+        binding.descriptionTxt.setText(product.getDescription());
+        binding.addressTxt.setText(product.getAddress());
+        binding.ratingBar.setRating(4.5f);
+        binding.ratingTxt.setText("4.5 Rating");
 
         Glide.with(DetailActivity.this)
-                .load(object.getPic())
+                .load(product.getImageUrl())
                 .into(binding.pic);
 
         binding.addToCartBtn.setOnClickListener(view -> {
-            Intent intent = new Intent(DetailActivity.this, TicketActivity.class);
-            intent.putExtra("object", object);
-            startActivity(intent);
+//            Intent intent = new Intent(DetailActivity.this, TicketActivity.class);
+//            intent.putExtra("object", product);
+//            startActivity(intent);
         });
     }
 
     private void getIntentExtra() {
-        object = (Item) getIntent().getSerializableExtra("object");
+        product = getIntent().getParcelableExtra("object");
     }
 }

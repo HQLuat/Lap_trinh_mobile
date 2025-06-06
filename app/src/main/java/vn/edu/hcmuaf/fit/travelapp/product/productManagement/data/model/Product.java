@@ -1,10 +1,15 @@
 package vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import androidx.annotation.NonNull;
+
 import com.google.firebase.Timestamp;
 
-import java.io.Serializable;
+import java.util.Date;
 
-public class Product implements Serializable {
+public class Product implements Parcelable {
     private String productId;
     private String name;
     private String description;
@@ -13,11 +18,12 @@ public class Product implements Serializable {
     private int stock;
     private Timestamp departureDate;
     private boolean isActive;
+    private String address;
 
     public Product() {
     }
 
-    public Product(String name, String description, double price, String imageUrl, int stock, Timestamp departureDate) {
+    public Product(String name, String description, double price, String imageUrl, int stock, Timestamp departureDate, String address) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -25,6 +31,21 @@ public class Product implements Serializable {
         this.stock = stock;
         this.departureDate = departureDate;
         this.isActive = true;
+        this.address = address;
+    }
+
+    // --- Parcelable implementation ---
+    protected Product(Parcel in) {
+        productId = in.readString();
+        name = in.readString();
+        description = in.readString();
+        price = in.readDouble();
+        imageUrl = in.readString();
+        stock = in.readInt();
+        long timestampMillis = in.readLong();
+        departureDate = timestampMillis != 0 ? new Timestamp(new Date(timestampMillis)) : null;
+        isActive = in.readByte() != 0;
+        address = in.readString();
     }
 
     public String getProductId() {
@@ -90,4 +111,42 @@ public class Product implements Serializable {
     public void setActive(boolean active) {
         isActive = active;
     }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(productId);
+        dest.writeString(name);
+        dest.writeString(description);
+        dest.writeDouble(price);
+        dest.writeString(imageUrl);
+        dest.writeInt(stock);
+        dest.writeLong(departureDate != null ? departureDate.toDate().getTime() : 0);
+        dest.writeByte((byte) (isActive ? 1 : 0));
+        dest.writeString(address);
+    }
+
+    public static final Creator<Product> CREATOR = new Creator<Product>() {
+        @Override
+        public Product createFromParcel(Parcel in) {
+            return new Product(in);
+        }
+
+        @Override
+        public Product[] newArray(int size) {
+            return new Product[size];
+        }
+    };
 }

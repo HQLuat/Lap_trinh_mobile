@@ -45,15 +45,15 @@
         app:layout_constraintBottom_toBottomOf="@+id/pic"
         app:layout_constraintStart_toStartOf="@+id/titleTxt" />
 
-    <TextView
-        android:id="@+id/textView7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="/Person"
-        android:textColor="@color/darkBlue"
-        app:layout_constraintBottom_toBottomOf="@+id/priceTxt"
-        app:layout_constraintStart_toEndOf="@+id/priceTxt" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView7"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="8dp"-->
+<!--        android:text="/Person"-->
+<!--        android:textColor="@color/darkBlue"-->
+<!--        app:layout_constraintBottom_toBottomOf="@+id/priceTxt"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/priceTxt" />-->
 
     <ImageView
         android:id="@+id/imageView4"
@@ -85,7 +85,8 @@
         android:textColor="@color/darkBlue"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/textView7"
+        app:layout_constraintBottom_toBottomOf="@+id/priceTxt"
+        app:layout_constraintTop_toTopOf="@+id/priceTxt"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView

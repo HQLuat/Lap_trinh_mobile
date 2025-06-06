@@ -143,7 +143,7 @@ public class AddEditProductActivity extends AppCompatActivity {
             int stock = Integer.parseInt(binding.etProductStock.getText().toString());
 
             Timestamp departureDate = new Timestamp(departureCalendar.getTime());
-            product = new Product(name, description, price, "", stock, departureDate);
+            product = new Product(name, description, price, "", stock, departureDate, "abc");
 
 
         } catch (NumberFormatException e) {

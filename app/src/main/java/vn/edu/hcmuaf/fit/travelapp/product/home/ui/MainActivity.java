@@ -3,10 +3,12 @@ package vn.edu.hcmuaf.fit.travelapp.product.home.ui;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
@@ -20,20 +22,21 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
+import vn.edu.hcmuaf.fit.travelapp.R;
+import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityMainBinding;
 import vn.edu.hcmuaf.fit.travelapp.product.home.adapter.CategoryAdapter;
 import vn.edu.hcmuaf.fit.travelapp.product.home.adapter.PopularAdapter;
 import vn.edu.hcmuaf.fit.travelapp.product.home.adapter.RecommendedAdapter;
 import vn.edu.hcmuaf.fit.travelapp.product.home.adapter.SliderAdapter;
 import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.Category;
-import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.Item;
 import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.Location;
-import vn.edu.hcmuaf.fit.travelapp.R;
-import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityMainBinding;
 import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.SliderItem;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.viewmodel.ProductViewModel;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private FirebaseDatabase database;
+    private ProductViewModel productViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         database = FirebaseDatabase.getInstance();
+
+        // init ViewModel
+        productViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(ProductViewModel.class);
+
+        // get products
+        productViewModel.fetchProducts();
 
         initLocation();
         initBanners();
@@ -136,53 +145,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initPopular() {
-        DatabaseReference myref = database.getReference("Popular");
-        ArrayList<Item> list = new ArrayList<>();
-        myref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot issue : snapshot.getChildren()) {
-                        list.add(issue.getValue(Item.class));
-                    }
-                    if (!list.isEmpty()) {
-                        binding.recyclerViewPopular.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
-                        RecyclerView.Adapter adapter = new PopularAdapter(list);
-                        binding.recyclerViewPopular.setAdapter(adapter);
-                    }
-                    binding.progressBarPopular.setVisibility(View.GONE);
-                }
+        productViewModel.getProductList().observe(this, products -> {
+            if (products != null && !products.isEmpty()) {
+                binding.recyclerViewPopular.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                binding.recyclerViewPopular.setAdapter(new PopularAdapter(products));
             }
+            binding.progressBarPopular.setVisibility(View.GONE);
+        });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+        productViewModel.getErrorMessage().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void initRecommended() {
-        DatabaseReference myref = database.getReference("Item");
-        ArrayList<Item> list = new ArrayList<>();
-        myref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    for (DataSnapshot issue : snapshot.getChildren()) {
-                        list.add(issue.getValue(Item.class));
-                    }
-                    if (!list.isEmpty()) {
-                        binding.recyclerViewRecommended.setLayoutManager(new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false));
-                        RecyclerView.Adapter adapter = new RecommendedAdapter(list);
-                        binding.recyclerViewRecommended.setAdapter(adapter);
-                    }
-                    binding.progressBarRecommended.setVisibility(View.GONE);
-                }
+        productViewModel.getProductList().observe(this, products -> {
+            if (products != null && !products.isEmpty()) {
+                binding.recyclerViewRecommended.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+                binding.recyclerViewRecommended.setAdapter(new RecommendedAdapter(products));
             }
+            binding.progressBarRecommended.setVisibility(View.GONE);
+        });
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
+        productViewModel.getErrorMessage().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
     }
