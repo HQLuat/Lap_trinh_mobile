@@ -20,6 +20,12 @@
         android:theme="@style/Theme.TravelApp"
         tools:targetApi="31">
         <activity
+            android:name=".auth.ui.SignupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".auth.ui.LoginActivity"
+            android:exported="false" />
+        <activity
             android:name=".payment.ui.PaymentNotificationActivity"
             android:exported="true" />
         <activity
@@ -46,7 +52,13 @@
             android:exported="false" />
         <activity
             android:name=".auth.ui.SplashAuthenticationActivity"
-            android:exported="true" />
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".product.home.ui.TicketActivity"
             android:exported="false" />
@@ -56,11 +68,6 @@
         <activity
             android:name=".product.home.ui.SplashActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".product.home.ui.MainActivity"
