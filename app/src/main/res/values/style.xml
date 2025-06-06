@@ -8,9 +8,16 @@
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textColorHint">@color/grey</item>
+
     </style>
     <style name="CircleImageView">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Tắt mặc định button tint -->
+        <item name="colorControlHighlight">@android:color/transparent</item>
+        <item name="colorButtonNormal">@android:color/transparent</item>
+    </style>
+
 </resources>

@@ -1,5 +1,6 @@
 package vn.edu.hcmuaf.fit.travelapp.payment.Api;
 
+import okhttp3.RequestBody;
 import vn.edu.hcmuaf.fit.travelapp.payment.Constant.AppInfo;
 import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
 
@@ -8,7 +9,7 @@ import org.json.JSONObject;
 import java.util.Date;
 
 import okhttp3.FormBody;
-import okhttp3.RequestBody;
+
 
 public class CreateOrder {
     private class CreateOrderData {

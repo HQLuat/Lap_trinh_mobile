@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/payment_notify_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@android:color/white"
+    android:padding="32dp"
+    tools:context=".payment.ui.PaymentNotificationActivity">
+
+    <!-- Biểu tượng thành công -->
+    <ImageView
+        android:id="@+id/imgSuccess"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/done_ok_right_success_tick_icon"
+        android:layout_marginBottom="24dp" />
+
+
+    <!-- Thông báo thành công -->
+    <TextView
+        android:id="@+id/tvNotify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thanh toán thành công!"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/holo_green_dark"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Thông tin mô tả (tuỳ chọn) -->
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cảm ơn bạn đã sử dụng dịch vụ."
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:gravity="center"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Nút quay về trang chủ -->
+    <Button
+        android:id="@+id/btnBackToHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quay về trang chủ"
+        android:textColor="@android:color/white"
+        android:background="@drawable/button_outline_green"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginTop="12dp"/>
+
+
+
+
+</LinearLayout>

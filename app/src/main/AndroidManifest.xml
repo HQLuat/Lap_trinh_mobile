@@ -26,7 +26,10 @@
             android:name=".auth.ui.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".payment.PaymentActivity"
+            android:name=".payment.ui.PaymentNotificationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".payment.ui.PaymentActivity"
             android:exported="true"
             android:label="Merchant Demo"
             android:launchMode="singleTask">
