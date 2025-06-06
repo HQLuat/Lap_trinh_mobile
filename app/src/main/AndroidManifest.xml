@@ -21,22 +21,22 @@
             android:name=".auth.ui.UserActivity"
             android:exported="false" />
         <activity
-            android:name=".product.ui.ProductManagementActivity"
+            android:name=".product.productManagement.ui.ProductManagementActivity"
             android:exported="false" />
         <activity
-            android:name=".product.ui.AddEditProductActivity"
+            android:name=".product.productManagement.ui.AddEditProductActivity"
             android:exported="false" />
         <activity
             android:name=".auth.ui.SplashAuthenticationActivity"
             android:exported="true" />
         <activity
-            android:name=".activity.TicketActivity"
+            android:name=".product.home.ui.TicketActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.DetailActivity"
+            android:name=".product.home.ui.DetailActivity"
             android:exported="false" />
         <activity
-            android:name=".activity.SplashActivity"
+            android:name=".product.home.ui.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,7 +45,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".product.home.ui.MainActivity"
             android:exported="true" />
     </application>
 
