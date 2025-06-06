@@ -44,7 +44,11 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+    implementation(fileTree(mapOf(
+        "dir" to "src/main/java/vn/edu/hcmuaf/fit/travelapp/libs",
+        "include" to listOf("*.aar", "*.jar")
+    )))
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
@@ -57,4 +61,6 @@ dependencies {
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    // payment
+    implementation("commons-codec:commons-codec:1.14")
 }
