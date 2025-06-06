@@ -322,7 +322,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/scrollView3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
-
+<!--        Buy Button -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/addToCartBtn"
             style="@android:style/Widget.Button"
