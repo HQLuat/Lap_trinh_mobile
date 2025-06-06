@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <!-- Các quyền cần thiết -->
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Các quyền cần thiết -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -20,15 +20,22 @@
         android:theme="@style/Theme.TravelApp"
         tools:targetApi="31">
         <activity
-            android:name=".payment.PaymentActivity"
+            android:name=".payment.ui.PaymentNotificationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".payment.ui.PaymentActivity"
             android:exported="true"
             android:label="Merchant Demo"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="demozpdk" android:host="app"/>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="app"
+                    android:scheme="demozpdk" />
             </intent-filter>
         </activity>
         <activity
