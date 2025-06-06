@@ -2,7 +2,7 @@ package vn.edu.hcmuaf.fit.travelapp.payment.Helper;
 
 import android.annotation.SuppressLint;
 
-import com.zlpdemo.merchantDemo.Helper.HMac.HMacUtil;
+import vn.edu.hcmuaf.fit.travelapp.payment.Helper.HMac.HMacUtil;
 
 import org.jetbrains.annotations.NotNull;
 import java.security.InvalidKeyException;
