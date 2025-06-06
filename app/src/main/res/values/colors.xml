@@ -6,4 +6,10 @@
     <color name="darkBlue">#253f66</color>
     <color name="lightGray">#efefef</color>
     <color name="grey">#e4e5e9</color>
+
+    <color name="gray_black_1">#212121</color>
+    <color name="gray_black_2">#2C2C2C</color>
+    <color name="gray_black_3">#333333</color>
+    <color name="gray_black_4">#424242</color>
+    <color name="gray_black_5">#4E4E4E</color>
 </resources>
