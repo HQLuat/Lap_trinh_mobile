@@ -11,45 +11,45 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.util.ArrayList;
+import java.util.List;
 
-import vn.edu.hcmuaf.fit.travelapp.product.home.ui.DetailActivity;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ViewholderRecommendedBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.home.data.model.Item;
+import vn.edu.hcmuaf.fit.travelapp.product.home.ui.DetailActivity;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.Product;
 
 public class RecommendedAdapter extends RecyclerView.Adapter<RecommendedAdapter.Viewholder> {
-    ArrayList<Item> items;
+    List<Product> items;
     Context context;
-    ViewholderRecommendedBinding binding;
 
-    public RecommendedAdapter(ArrayList<Item> items) {
+    public RecommendedAdapter(List<Product> items) {
         this.items = items;
     }
 
     @NonNull
     @Override
     public RecommendedAdapter.Viewholder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        binding = ViewholderRecommendedBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ViewholderRecommendedBinding binding = ViewholderRecommendedBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
         context = parent.getContext();
         return new Viewholder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecommendedAdapter.Viewholder holder, int position) {
-        binding.titleTxt.setText(items.get(position).getTitle());
-        binding.priceTxt.setText("$" + items.get(position).getPrice());
-        binding.addressTxt.setText(items.get(position).getAddress());
-        binding.scoreTxt.setText("" + items.get(position).getScore());
+        Product item = items.get(position);
+        holder.binding.titleTxt.setText(item.getName());
+        holder.binding.priceTxt.setText(item.getPrice() + "đ");
+        holder.binding.addressTxt.setText(item.getAddress());
+        holder.binding.scoreTxt.setText("5");
 
         Glide.with(context)
-                .load(items.get(position).getPic())
-                .into(binding.pic);
+                .load(item.getImageUrl())
+                .into(holder.binding.pic);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, DetailActivity.class);
-                intent.putExtra("object", items.get(position));
+                intent.putExtra("object", item);
                 context.startActivity(intent);
             }
         });
@@ -61,8 +61,10 @@ public class RecommendedAdapter extends RecyclerView.Adapter<RecommendedAdapter.
     }
 
     public class Viewholder extends RecyclerView.ViewHolder {
+        ViewholderRecommendedBinding binding;
         public Viewholder(ViewholderRecommendedBinding binding) {
             super(binding.getRoot());
+            this.binding = binding;
         }
     }
 }
