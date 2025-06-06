@@ -1,7 +1,7 @@
 package vn.edu.hcmuaf.fit.travelapp.payment.Api;
 
-import com.zlpdemo.merchantDemo.Constant.AppInfo;
-import com.zlpdemo.merchantDemo.Helper.Helpers;
+import vn.edu.hcmuaf.fit.travelapp.payment.Constant.AppInfo;
+import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
 
 import org.json.JSONObject;
 
