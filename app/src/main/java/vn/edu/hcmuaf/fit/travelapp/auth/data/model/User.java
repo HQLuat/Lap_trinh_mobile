@@ -1,11 +1,15 @@
 package vn.edu.hcmuaf.fit.travelapp.auth.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class User {
+public class User implements Parcelable {
     private String userId;
     private String fullName;
     private String phoneNumber;
@@ -33,6 +37,70 @@ public class User {
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.createdAt = createdAt;
+    }
+
+    public User(User other) {
+        this.userId = other.userId;
+        this.fullName = other.fullName;
+        this.phoneNumber = other.phoneNumber;
+        this.email = other.email;
+        this.profileImageUrl = other.profileImageUrl;
+        this.role = other.role;
+
+        this.bookingHistory = (other.bookingHistory != null) ? new ArrayList<>(other.bookingHistory) : null;
+        this.address = other.address;
+        this.gender = other.gender;
+
+        this.dateOfBirth = (other.dateOfBirth != null) ? new Date(other.dateOfBirth.getTime()) : null;
+        this.createdAt = other.createdAt;
+    }
+
+    protected User(Parcel in) {
+        userId = in.readString();
+        fullName = in.readString();
+        phoneNumber = in.readString();
+        email = in.readString();
+        profileImageUrl = in.readString();
+        role = in.readInt();
+        bookingHistory = in.createStringArrayList();
+        address = in.readString();
+        gender = in.readString();
+        dateOfBirth = new Date(in.readLong());
+
+        long createdAtMillis = in.readLong();
+        createdAt = new Timestamp(new Date(createdAtMillis));
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(userId);
+        dest.writeString(fullName);
+        dest.writeString(phoneNumber);
+        dest.writeString(email);
+        dest.writeString(profileImageUrl);
+        dest.writeInt(role);
+        dest.writeStringList(bookingHistory);
+        dest.writeString(address);
+        dest.writeString(gender);
+        dest.writeLong(dateOfBirth != null ? dateOfBirth.getTime() : -1);
+        dest.writeLong(createdAt != null ? createdAt.toDate().getTime() : -1);
     }
 
     public String getUserId() {

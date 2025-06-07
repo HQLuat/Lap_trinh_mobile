@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/explorer"
+        android:id="@+id/home"
         android:icon="@drawable/bottom_btn1"
         android:title="Home"
         app:cnb_backgroundColor="@color/purple"
@@ -15,13 +15,13 @@
         app:cnb_iconColor="@color/white" />
 
     <item
-        android:id="@+id/bookmark"
+        android:id="@+id/orderHistory"
         android:icon="@drawable/bottom_btn3"
         android:title="Bookmark"
         app:cnb_backgroundColor="@color/purple"
         app:cnb_iconColor="@color/white" />
     <item
-        android:id="@+id/cart"
+        android:id="@+id/profile"
         android:icon="@drawable/bottom_btn4"
         android:title="Profile"
         app:cnb_backgroundColor="@color/purple"

@@ -19,6 +19,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.ismaeldivita.chipnavigation.ChipNavigationBar;
 
 import java.util.ArrayList;
 
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private FirebaseDatabase database;
     private ProductViewModel productViewModel;
+    private MenuHandler menuHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
         initCategory();
         initPopular();
         initRecommended();
+
+        // set up menu
+        ChipNavigationBar bottomNavigation = binding.bottomNavigation;
+        menuHandler = new MenuHandler(this, bottomNavigation, R.id.home);
+        menuHandler.setupMenu();
     }
 
     private void initLocation() {
