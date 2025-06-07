@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import vn.edu.hcmuaf.fit.travelapp.databinding.ViewholderPopularBinding;
+import vn.edu.hcmuaf.fit.travelapp.payment.ui.PaymentActivity;
 import vn.edu.hcmuaf.fit.travelapp.product.home.ui.DetailActivity;
 import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.Product;
 
@@ -48,7 +49,7 @@ public class PopularAdapter extends RecyclerView.Adapter<PopularAdapter.Viewhold
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(context, DetailActivity.class);
+                Intent intent = new Intent(context, PaymentActivity.class);
                 intent.putExtra("object", item);
                 context.startActivity(intent);
             }
