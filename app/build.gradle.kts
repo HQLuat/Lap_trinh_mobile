@@ -63,4 +63,7 @@ dependencies {
     implementation(libs.okhttp.logging)
     // payment
     implementation("commons-codec:commons-codec:1.14")
+    // 070625
+    implementation(libs.sdp)
+    implementation(libs.ssp)
 }
