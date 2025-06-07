@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightGray">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:background="@color/white"
+        android:elevation="4dp"
+        android:layout_margin="16dp"
+        android:layout_gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cập Nhật Thông Tin"
+            android:textColor="@color/darkBlue"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="16dp" />
+
+        <EditText
+            android:id="@+id/et_full_name"
+            style="@style/StyledEditText"
+            android:hint="Họ và tên" />
+
+        <EditText
+            android:id="@+id/et_phone"
+            style="@style/StyledEditText"
+            android:hint="Số điện thoại"
+            android:inputType="phone" />
+
+        <EditText
+            android:id="@+id/et_email"
+            style="@style/StyledEditText"
+            android:hint="Email"
+            android:inputType="textEmailAddress" />
+
+        <EditText
+            android:id="@+id/et_address"
+            style="@style/StyledEditText"
+            android:hint="Địa chỉ" />
+
+        <EditText
+            android:id="@+id/et_gender"
+            style="@style/StyledEditText"
+            android:hint="Giới tính (Nam/Nữ/...)" />
+
+        <EditText
+            android:id="@+id/et_dob"
+            style="@style/StyledEditText"
+            android:hint="Ngày sinh (dd/MM/yyyy)" />
+
+        <FrameLayout
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp">
+
+            <ImageView
+                android:id="@+id/iv_profile_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:padding="8dp"
+                android:contentDescription="Ảnh đại diện"
+                android:onClick="onSelectImageClick" />
+
+<!--            <ImageView-->
+<!--                android:id="@+id/iv_add_icon"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:src="@drawable/ic_picture"-->
+<!--                android:padding="8dp"-->
+<!--                android:background="@drawable/image_border"-->
+<!--                android:clickable="false"-->
+<!--                android:focusable="false" />-->
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nhấn để chọn ảnh đại diện"
+            android:textColor="@color/grey"
+            android:textSize="14sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"/>
+
+        <Button
+            android:id="@+id/btn_update_user"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Cập nhật"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/darkBlue"
+            android:paddingVertical="12dp"
+            android:onClick="onUpdateUserClick" />
+
+    </LinearLayout>
+</ScrollView>

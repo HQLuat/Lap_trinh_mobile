@@ -1,5 +1,8 @@
 package vn.edu.hcmuaf.fit.travelapp.auth.data.repository;
 
+import android.content.Context;
+import android.net.Uri;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
@@ -8,7 +11,25 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.model.User;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.CloudinaryApi;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.DeleteCallback;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.UploadCallback;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.CloudinaryDeleteResponse;
+import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.CloudinaryUploadResponse;
 
 public class UserRepository {
 
@@ -42,7 +63,7 @@ public class UserRepository {
                 .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
     }
 
-    public void createOrUpdateUser(User user, OnUserSaveListener listener) {
+    public void updateUser(User user, OnUserSaveListener listener) {
         FirebaseUser firebaseUser = auth.getCurrentUser();
         if (firebaseUser == null) {
             listener.onFailure("User not logged in");
@@ -84,7 +105,6 @@ public class UserRepository {
                 });
     }
 
-
     public void loginUser(String email, String password, OnUserLoginListener listener) {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -103,7 +123,110 @@ public class UserRepository {
                 });
     }
 
+    public void logoutUser() {
+        auth.signOut();
+    }
 
+    public void uploadProfileImageToCloudinary(Context context, Uri imageUri, UploadCallback callback) {
+        String cloudName = "dbpvcjmk0";
+        String uploadPreset = "unsigned_preset_1";
+        String folderName = "users";
+
+        FirebaseUser firebaseUser = auth.getCurrentUser();
+        if (firebaseUser == null) {
+            callback.onFailure(new Exception("User not logged in"));
+            return;
+        }
+
+        String userId = firebaseUser.getUid();
+        String fileName = "user_" + userId + ".jpg";
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.cloudinary.com/v1_1/" + cloudName + "/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        CloudinaryApi api = retrofit.create(CloudinaryApi.class);
+
+        try {
+            InputStream inputStream = context.getContentResolver().openInputStream(imageUri);
+            byte[] imageBytes = new byte[inputStream.available()];
+            inputStream.read(imageBytes);
+            inputStream.close();
+
+            RequestBody requestFile = RequestBody.create(imageBytes, MediaType.parse("image/*"));
+            MultipartBody.Part body = MultipartBody.Part.createFormData("file", fileName, requestFile);
+
+            RequestBody preset = RequestBody.create(uploadPreset, MediaType.parse("text/plain"));
+            RequestBody folder = RequestBody.create(folderName, MediaType.parse("text/plain"));
+
+            api.uploadImage(body, preset, folder).enqueue(new Callback<CloudinaryUploadResponse>() {
+                @Override
+                public void onResponse(Call<CloudinaryUploadResponse> call, Response<CloudinaryUploadResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        callback.onSuccess(response.body().getSecureUrl());
+                    } else {
+                        callback.onFailure(new Exception("Upload failed"));
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<CloudinaryUploadResponse> call, Throwable t) {
+                    callback.onFailure(t);
+                }
+            });
+
+        } catch (IOException e) {
+            callback.onFailure(e);
+        }
+    }
+
+    public void deleteUserImageFromCloudinary(Context context, String publicId, DeleteCallback callback) {
+        String cloudName = "dbpvcjmk0";
+        String apiKey = "599825456567849";
+        String apiSecret = "gN40yfRK0VrKQRXDYB1rZho4UEY";
+
+        long timestamp = System.currentTimeMillis() / 1000L;
+        String toSign = "public_id=" + publicId + "&timestamp=" + timestamp + apiSecret;
+        String signature = sha1(toSign);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.cloudinary.com/v1_1/" + cloudName + "/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        CloudinaryApi api = retrofit.create(CloudinaryApi.class);
+
+        api.deleteImage(publicId, apiKey, timestamp, signature).enqueue(new Callback<CloudinaryDeleteResponse>() {
+            @Override
+            public void onResponse(Call<CloudinaryDeleteResponse> call, Response<CloudinaryDeleteResponse> response) {
+                if (response.isSuccessful() && response.body() != null && "ok".equalsIgnoreCase(response.body().getResult())) {
+                    callback.onSuccess();
+                } else {
+                    callback.onFailure(new Exception("Delete failed: " + (response.body() != null ? response.body().getResult() : "No response")));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CloudinaryDeleteResponse> call, Throwable t) {
+                callback.onFailure(new Exception("Delete failed: " + t.getMessage()));
+            }
+        });
+    }
+
+    private String sha1(String input) {
+        try {
+            MessageDigest mDigest = MessageDigest.getInstance("SHA-1");
+            byte[] result = mDigest.digest(input.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : result) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-1 algorithm not found");
+        }
+    }
 
     public interface OnUserFetchListener {
         void onSuccess(User user);
@@ -124,5 +247,4 @@ public class UserRepository {
         void onSuccess(FirebaseUser user);
         void onFailure(String errorMessage);
     }
-
 }
