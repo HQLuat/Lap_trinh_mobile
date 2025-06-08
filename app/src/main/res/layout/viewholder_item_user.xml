@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardElevation="4dp"
+    app:cardCornerRadius="8dp"
+    android:padding="8dp"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/imgUser"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_background"/>
+
+        <!-- Product Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="8dp">
+
+            <TextView
+                android:id="@+id/tvUserName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tên người dùng"
+                android:textStyle="bold"
+                android:textColor="@color/darkBlue"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Email: example@gmail.com" />
+
+            <TextView
+                android:id="@+id/tvUserGender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Giới tính: Nam" />
+
+            <TextView
+                android:id="@+id/tvCreateDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ngày tạo: --/--/----" />
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:text="Sửa"
+                    android:textColor="@color/purple"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    style="@style/Widget.Material3.Button.TextButton" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:text="Xoá"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="16dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:layout_marginStart="8dp"
+                    style="@style/Widget.Material3.Button.TextButton" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

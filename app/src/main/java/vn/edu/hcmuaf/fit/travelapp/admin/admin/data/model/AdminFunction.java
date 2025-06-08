@@ -1,4 +1,4 @@
-package vn.edu.hcmuaf.fit.travelapp.admin.data.model;
+package vn.edu.hcmuaf.fit.travelapp.admin.admin.data.model;
 
 public class AdminFunction {
     private String title;

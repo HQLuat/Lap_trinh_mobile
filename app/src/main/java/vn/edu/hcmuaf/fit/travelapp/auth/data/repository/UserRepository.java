@@ -9,12 +9,15 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -64,13 +67,14 @@ public class UserRepository {
     }
 
     public void updateUser(User user, OnUserSaveListener listener) {
-        FirebaseUser firebaseUser = auth.getCurrentUser();
-        if (firebaseUser == null) {
-            listener.onFailure("User not logged in");
-            return;
-        }
+//        FirebaseUser firebaseUser = auth.getCurrentUser();
+//        if (firebaseUser == null) {
+//            listener.onFailure("User not logged in");
+//            return;
+//        }
 
-        String uid = firebaseUser.getUid();
+//        String uid = firebaseUser.getUid();
+        String uid = user.getUserId();
         usersRef.document(uid).set(user)
                 .addOnSuccessListener(unused -> listener.onSuccess())
                 .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
@@ -125,6 +129,46 @@ public class UserRepository {
 
     public void logoutUser() {
         auth.signOut();
+    }
+
+    public void deleteUserById(String userId, OnUserDeleteListener listener) {
+        usersRef.document(userId)
+                .update("isDeleted", true)
+                .addOnSuccessListener(aVoid -> listener.onSuccess())
+                .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
+    }
+
+    public void getAllUsers(OnUsersFetchListener listener) {
+        usersRef.whereEqualTo("deleted", false)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            users.add(user);
+                        }
+                    }
+                    listener.onSuccess(users);
+                })
+                .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
+    }
+
+    public void findUserById(String userId, OnUserFetchListener listener) {
+        usersRef.document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null && !Boolean.TRUE.equals(user.isDeleted())) {
+                            listener.onSuccess(user);
+                        } else {
+                            listener.onFailure("User not found or has been deleted");
+                        }
+                    } else {
+                        listener.onFailure("User document not found");
+                    }
+                })
+                .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
     }
 
     public void uploadProfileImageToCloudinary(Context context, Uri imageUri, UploadCallback callback) {
@@ -233,6 +277,11 @@ public class UserRepository {
         void onFailure(String errorMessage);
     }
 
+    public interface OnUsersFetchListener {
+        void onSuccess(List<User> users);
+        void onFailure(String errorMessage);
+    }
+
     public interface OnUserSaveListener {
         void onSuccess();
         void onFailure(String errorMessage);
@@ -245,6 +294,11 @@ public class UserRepository {
 
     public interface OnUserLoginListener {
         void onSuccess(FirebaseUser user);
+        void onFailure(String errorMessage);
+    }
+
+    public interface OnUserDeleteListener {
+        void onSuccess();
         void onFailure(String errorMessage);
     }
 }
