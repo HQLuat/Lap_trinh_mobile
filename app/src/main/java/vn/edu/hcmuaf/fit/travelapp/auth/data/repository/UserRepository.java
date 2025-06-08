@@ -113,19 +113,33 @@ public class UserRepository {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && auth.getCurrentUser() != null) {
-                        listener.onSuccess(auth.getCurrentUser());
+                        String userId = auth.getCurrentUser().getUid();
+
+                        // Lấy thông tin người dùng từ Firestore
+                        usersRef.document(userId).get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    if (documentSnapshot.exists()) {
+                                        User user = documentSnapshot.toObject(User.class);
+                                        listener.onSuccess(user);
+                                    } else {
+                                        listener.onFailure("User document not found in database.");
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    listener.onFailure("Failed to retrieve user data: " + e.getMessage());
+                                });
                     } else {
                         Exception e = task.getException();
-                        if (e instanceof FirebaseAuthInvalidUserException) {
-                            listener.onFailure("Email not found.");
-                        } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
-                            listener.onFailure("Incorrect password.");
+                        if (e instanceof FirebaseAuthInvalidUserException || e instanceof FirebaseAuthInvalidCredentialsException) {
+                            listener.onFailure("Email or password is incorrect.");
                         } else {
                             listener.onFailure("Login failed: " + (e != null ? e.getMessage() : "Unknown error"));
                         }
                     }
+
                 });
     }
+
 
     public void logoutUser() {
         auth.signOut();
@@ -293,7 +307,7 @@ public class UserRepository {
     }
 
     public interface OnUserLoginListener {
-        void onSuccess(FirebaseUser user);
+        void onSuccess(User user);
         void onFailure(String errorMessage);
     }
 
