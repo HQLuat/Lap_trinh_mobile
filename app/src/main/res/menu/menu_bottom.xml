@@ -16,8 +16,8 @@
 
     <item
         android:id="@+id/orderHistory"
-        android:icon="@drawable/bottom_btn3"
-        android:title="Bookmark"
+        android:icon="@drawable/bottom_transaction"
+        android:title="Transaction"
         app:cnb_backgroundColor="@color/purple"
         app:cnb_iconColor="@color/white" />
     <item
