@@ -7,7 +7,7 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityPaymentNotificationBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.home.ui.MainActivity;
+import vn.edu.hcmuaf.fit.travelapp.home.ui.MainActivity;
 
 public class PaymentNotificationActivity extends AppCompatActivity {
     private ActivityPaymentNotificationBinding binding;

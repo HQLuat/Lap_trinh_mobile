@@ -2,7 +2,6 @@ package vn.edu.hcmuaf.fit.travelapp.auth.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -21,7 +20,7 @@ import vn.edu.hcmuaf.fit.travelapp.R;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.LogoutViewModel;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.UserViewModel;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityProfileBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.home.ui.MenuHandler;
+import vn.edu.hcmuaf.fit.travelapp.home.ui.MenuHandler;
 
 public class ProfileActivity extends AppCompatActivity {
     private ActivityProfileBinding binding;

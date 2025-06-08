@@ -28,11 +28,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.model.User;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.CloudinaryApi;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.DeleteCallback;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.UploadCallback;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.CloudinaryDeleteResponse;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.CloudinaryUploadResponse;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.datasource.CloudinaryApi;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.datasource.DeleteCallback;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.datasource.UploadCallback;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.model.CloudinaryDeleteResponse;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.model.CloudinaryUploadResponse;
 
 public class UserRepository {
 

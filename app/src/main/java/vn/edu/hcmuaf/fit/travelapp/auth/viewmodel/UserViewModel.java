@@ -11,11 +11,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 
-import vn.edu.hcmuaf.fit.travelapp.auth.data.model.Event;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.model.User;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.repository.UserRepository;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.DeleteCallback;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.UploadCallback;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.datasource.DeleteCallback;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.datasource.UploadCallback;
 
 public class UserViewModel extends AndroidViewModel {
 

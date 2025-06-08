@@ -23,7 +23,7 @@ import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderRepo;
 import vn.edu.hcmuaf.fit.travelapp.order.model.OrderItem;
 import vn.edu.hcmuaf.fit.travelapp.payment.Api.CreateOrder;
 import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.model.Product;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.model.Product;
 import vn.zalopay.sdk.Environment;
 import vn.zalopay.sdk.ZaloPayError;
 import vn.zalopay.sdk.ZaloPaySDK;

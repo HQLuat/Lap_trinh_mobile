@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Toast;
 import android.Manifest;
 
@@ -28,7 +27,6 @@ import vn.edu.hcmuaf.fit.travelapp.R;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.model.User;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.UserViewModel;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityEditProfileBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.viewmodel.ProductViewModel;
 
 public class EditProfileActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
