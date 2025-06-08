@@ -48,14 +48,7 @@ public class ProductManagementActivity extends AppCompatActivity {
             @Override
             public void onUpdateProduct(Product product) {
                 Intent intent = new Intent(ProductManagementActivity.this, AddEditProductActivity.class);
-                intent.putExtra("productId", product.getProductId());
-                intent.putExtra("name", product.getName());
-                intent.putExtra("description", product.getDescription());
-                intent.putExtra("price", product.getPrice());
-                intent.putExtra("imageUrl", product.getImageUrl());
-                intent.putExtra("stock", product.getStock());
-                intent.putExtra("departureDate", product.getDepartureDate().toDate().getTime());
-                intent.putExtra("isActive", product.isActive());
+                intent.putExtra("product", product);
                 addProductLauncher.launch(intent);
             }
         });

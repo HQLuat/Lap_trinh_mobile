@@ -30,17 +30,17 @@
             android:paddingBottom="16dp" />
 
         <!-- Vai trò -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Vai trò của người dùng"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="8dp"
-            app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusBottomStart="8dp"
-            app:boxCornerRadiusBottomEnd="8dp"
-            android:layout_marginTop="12dp">
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Vai trò của người dùng"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            app:boxBackgroundMode="outline"-->
+<!--            app:boxCornerRadiusTopStart="8dp"-->
+<!--            app:boxCornerRadiusTopEnd="8dp"-->
+<!--            app:boxCornerRadiusBottomStart="8dp"-->
+<!--            app:boxCornerRadiusBottomEnd="8dp"-->
+<!--            android:layout_marginTop="12dp">-->
 
 <!--            <AutoCompleteTextView-->
 <!--                android:id="@+id/et_user_role"-->
@@ -49,26 +49,39 @@
 <!--                android:paddingHorizontal="12dp"-->
 <!--                android:textSize="16sp"-->
 <!--                android:inputType="text" />-->
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/et_user_role"
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:paddingHorizontal="12dp"
-                android:textSize="16sp" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Trạng thái -->
+<!--            <com.google.android.material.textfield.MaterialAutoCompleteTextView-->
+<!--                android:id="@+id/et_user_role"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="45dp"-->
+<!--                android:paddingHorizontal="12dp"-->
+<!--                android:textSize="16sp" />-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Trạng thái tài khoản"
-            android:layout_marginTop="16dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="8dp"
-            app:boxCornerRadiusTopEnd="8dp"
-            app:boxCornerRadiusBottomStart="8dp"
-            app:boxCornerRadiusBottomEnd="8dp">
+            android:layout_margin="16dp"
+            android:hint="Select"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/auto_complete_role_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Trạng thái -->
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Trạng thái tài khoản"-->
+<!--            android:layout_marginTop="16dp"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            app:boxBackgroundMode="outline"-->
+<!--            app:boxCornerRadiusTopStart="8dp"-->
+<!--            app:boxCornerRadiusTopEnd="8dp"-->
+<!--            app:boxCornerRadiusBottomStart="8dp"-->
+<!--            app:boxCornerRadiusBottomEnd="8dp">-->
 
 <!--            <AutoCompleteTextView-->
 <!--                android:id="@+id/et_user_active"-->
@@ -78,13 +91,26 @@
 <!--                android:textSize="16sp"-->
 <!--                android:inputType="text"/>-->
 
-            <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                android:id="@+id/et_user_active"
-                android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:paddingHorizontal="12dp"
-                android:textSize="16sp" />
+<!--            <com.google.android.material.textfield.MaterialAutoCompleteTextView-->
+<!--                android:id="@+id/et_user_active"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="45dp"-->
+<!--                android:paddingHorizontal="12dp"-->
+<!--                android:textSize="16sp" />-->
 
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:hint="Select"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+            <AutoCompleteTextView
+                android:id="@+id/auto_complete_status_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button

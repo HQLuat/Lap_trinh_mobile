@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -63,32 +64,9 @@ public class AddEditProductActivity extends AppCompatActivity {
                 ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication()))
                 .get(ProductViewModel.class);
 
-        Intent intent = getIntent();
-
-        // Get individual fields from intent
-        String productId = intent.getStringExtra("productId");
-        String name = intent.getStringExtra("name");
-        String description = intent.getStringExtra("description");
-        double price = intent.getDoubleExtra("price", 0);
-        String imageUrl = intent.getStringExtra("imageUrl");
-        int stock = intent.getIntExtra("stock", 0);
-        long departureDateMillis = intent.getLongExtra("departureDate", -1);
-        boolean isActive = intent.getBooleanExtra("isActive", true);
-
-        // Create new Product object if data exists
-        if (productId != null) {
-            existingProduct = new Product();
-            existingProduct.setProductId(productId);
-            existingProduct.setName(name);
-            existingProduct.setDescription(description);
-            existingProduct.setPrice(price);
-            existingProduct.setImageUrl(imageUrl);
-            existingProduct.setStock(stock);
-            if (departureDateMillis != -1) {
-                existingProduct.setDepartureDate(new Timestamp(new Date(departureDateMillis)));
-            }
-            existingProduct.setActive(isActive);
-
+        // change mode
+        existingProduct = getIntent().getParcelableExtra("product");
+        if (existingProduct != null) {
             isEditMode = true;
         } else {
             isEditMode = false;
@@ -236,7 +214,8 @@ public class AddEditProductActivity extends AppCompatActivity {
     );
 
     // load product information
-    private void populateForm (Product product) {
+    private void populateForm(Product product) {
+        Log.d("populateForm", "populateForm");
         binding.etProductName.setText(product.getName());
         binding.etProductDescription.setText(product.getDescription());
         binding.etProductPrice.setText(String.valueOf(product.getPrice()));
