@@ -156,9 +156,8 @@ public class User implements Parcelable {
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
     public boolean isActive() { return active; }
-    public void setActive(boolean active) { active = active; }
+    public void setActive(boolean active) { this.active = active; }
 
     public boolean isDeleted() { return deleted; }
-    public void setDeleted(boolean deleted) { deleted = deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }
-

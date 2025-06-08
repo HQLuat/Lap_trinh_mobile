@@ -80,7 +80,7 @@ public class UserManagementActivity extends AppCompatActivity {
             public void onUpdateUser(User user) {
                 Intent intent = new Intent(UserManagementActivity.this, EditUserActivity.class);
                 intent.putExtra("user", user);
-                startActivity(intent);
+                addUserLauncher.launch(intent);
             }
         });
 

@@ -28,13 +28,13 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <!-- Add Button -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Thêm người dùng"
-        android:src="@android:drawable/ic_input_add"
-        app:layout_anchorGravity="bottom|end"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp" />
+<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
+<!--        android:id="@+id/fabAddUser"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:contentDescription="Thêm người dùng"-->
+<!--        android:src="@android:drawable/ic_input_add"-->
+<!--        app:layout_anchorGravity="bottom|end"-->
+<!--        android:layout_gravity="bottom|end"-->
+<!--        android:layout_margin="16dp" />-->
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
