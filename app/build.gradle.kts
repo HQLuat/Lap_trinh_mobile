@@ -66,4 +66,8 @@ dependencies {
     // 070625
     implementation(libs.sdp)
     implementation(libs.ssp)
+
+    // de them com mat
+    implementation("com.google.android.material:material:1.9.0")
+
 }

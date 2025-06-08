@@ -8,7 +8,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import vn.edu.hcmuaf.fit.travelapp.admin.admin.ui.AdminActivity;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.LoginViewModel;
+import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.UserViewModel;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityLoginBinding;
 import vn.edu.hcmuaf.fit.travelapp.product.home.ui.MainActivity;
 
@@ -16,6 +18,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
     private LoginViewModel loginViewModel;
+    private UserViewModel userViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +55,17 @@ public class LoginActivity extends AppCompatActivity {
 
         loginViewModel.getUserLiveData().observe(this, user -> {
             if (user != null) {
-                Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
+                int role = user.getRole();
+                if (role == 0) {
+                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                    startActivity(intent);
+                }
+                if (role == 2) {
+                    Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
