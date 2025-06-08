@@ -20,7 +20,13 @@
         android:theme="@style/Theme.TravelApp"
         tools:targetApi="31">
         <activity
-            android:name=".admin.ui.AdminActivity"
+            android:name=".admin.userManagement.ui.EditUserActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.userManagement.ui.UserManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".admin.admin.ui.AdminActivity"
             android:exported="false" />
         <activity
             android:name=".auth.ui.EditProfileActivity"
@@ -54,11 +60,14 @@
             android:name=".auth.ui.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".product.productManagement.ui.ProductManagementActivity"
+            android:exported="false" />
+        <activity
             android:name=".product.productManagement.ui.AddEditProductActivity"
             android:exported="false" />
         <activity
             android:name=".auth.ui.SplashAuthenticationActivity"
-            android:exported="true">
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

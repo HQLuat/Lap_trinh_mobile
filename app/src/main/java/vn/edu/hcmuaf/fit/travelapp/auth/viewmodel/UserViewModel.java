@@ -1,7 +1,6 @@
 package vn.edu.hcmuaf.fit.travelapp.auth.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -10,6 +9,9 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.List;
+
+import vn.edu.hcmuaf.fit.travelapp.auth.data.model.Event;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.model.User;
 import vn.edu.hcmuaf.fit.travelapp.auth.data.repository.UserRepository;
 import vn.edu.hcmuaf.fit.travelapp.product.productManagement.data.datasource.DeleteCallback;
@@ -19,8 +21,10 @@ public class UserViewModel extends AndroidViewModel {
 
     private final UserRepository userRepository;
     private final MutableLiveData<User> userLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<User>> usersLiveData = new MutableLiveData<>();
     private final MutableLiveData<String> errorLiveData = new MutableLiveData<>();
     private final MutableLiveData<Boolean> saveSuccessLiveData = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> deleteResult = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
         super(application);
@@ -42,7 +46,37 @@ public class UserViewModel extends AndroidViewModel {
         });
     }
 
+    public void fetchUsers() {
+        userRepository.getAllUsers(new UserRepository.OnUsersFetchListener() {
+            @Override
+            public void onSuccess(List<User> users) {
+                usersLiveData.setValue(users);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                errorLiveData.setValue(errorMessage);
+            }
+        });
+    }
+
+    public void fetchUser(String userId) {
+        userRepository.findUserById(userId, new UserRepository.OnUserFetchListener() {
+            @Override
+            public void onSuccess(User user) {
+                userLiveData.setValue(user);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                errorLiveData.setValue(errorMessage);
+            }
+        });
+    }
+
+
     public void updateUser(User user, Uri imageUri) {
+        Log.d("update user", "Update button clicked");
         if (imageUri != null) {
             if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
                 String oldImageUrl = user.getProfileImageUrl();
@@ -64,6 +98,7 @@ public class UserViewModel extends AndroidViewModel {
                 uploadNewImage(user, imageUri);
             }
         } else {
+            Log.d("update user", "prepare save");
             // save user information without image
             saveUser(user);
         }
@@ -105,13 +140,30 @@ public class UserViewModel extends AndroidViewModel {
         userRepository.updateUser(user, new UserRepository.OnUserSaveListener() {
             @Override
             public void onSuccess() {
+                Log.d("save success", "saved");
                 saveSuccessLiveData.setValue(true);
             }
 
             @Override
             public void onFailure(String errorMessage) {
+                Log.d("save", "failure");
                 errorLiveData.setValue(errorMessage);
                 saveSuccessLiveData.setValue(false);
+            }
+        });
+    }
+
+    public void deleteUser(String userId) {
+        userRepository.deleteUserById(userId, new UserRepository.OnUserDeleteListener() {
+            @Override
+            public void onSuccess() {
+                deleteResult.postValue(true);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                deleteResult.postValue(false);
+                Log.e("UserViewModel", "Delete failed: " + errorMessage);
             }
         });
     }
@@ -120,11 +172,19 @@ public class UserViewModel extends AndroidViewModel {
         return userLiveData;
     }
 
+    public MutableLiveData<List<User>> getUsersLiveData() {
+        return usersLiveData;
+    }
+
     public LiveData<String> getErrorLiveData() {
         return errorLiveData;
     }
 
     public LiveData<Boolean> getSaveSuccessLiveData() {
         return saveSuccessLiveData;
+    }
+
+    public LiveData<Boolean> getDeleteResult() {
+        return deleteResult;
     }
 }
