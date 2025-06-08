@@ -17,7 +17,7 @@ import vn.edu.hcmuaf.fit.travelapp.admin.admin.data.model.AdminFunction;
 import vn.edu.hcmuaf.fit.travelapp.admin.admin.data.model.Functions;
 import vn.edu.hcmuaf.fit.travelapp.admin.userManagement.ui.UserManagementActivity;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ViewholderDashboardItemBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.productManagement.ui.ProductManagementActivity;
+import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.ui.ProductManagementActivity;
 
 public class FunctionAdapter extends RecyclerView.Adapter<FunctionAdapter.Viewholder> {
     List<AdminFunction> items;

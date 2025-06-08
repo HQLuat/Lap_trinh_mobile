@@ -12,7 +12,7 @@ import vn.edu.hcmuaf.fit.travelapp.admin.admin.ui.AdminActivity;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.LoginViewModel;
 import vn.edu.hcmuaf.fit.travelapp.auth.viewmodel.UserViewModel;
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityLoginBinding;
-import vn.edu.hcmuaf.fit.travelapp.product.home.ui.MainActivity;
+import vn.edu.hcmuaf.fit.travelapp.home.ui.MainActivity;
 
 public class LoginActivity extends AppCompatActivity {
 

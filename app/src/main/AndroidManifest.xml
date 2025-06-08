@@ -60,10 +60,10 @@
             android:name=".auth.ui.ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".product.productManagement.ui.ProductManagementActivity"
+            android:name=".admin.productManagement.ui.ProductManagementActivity"
             android:exported="false" />
         <activity
-            android:name=".product.productManagement.ui.AddEditProductActivity"
+            android:name=".admin.productManagement.ui.AddEditProductActivity"
             android:exported="false" />
         <activity
             android:name=".auth.ui.SplashAuthenticationActivity"
@@ -75,16 +75,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".product.home.ui.TicketActivity"
+            android:name=".home.ui.TicketActivity"
             android:exported="false" />
         <activity
-            android:name=".product.home.ui.DetailActivity"
+            android:name=".home.ui.DetailActivity"
             android:exported="false" />
         <activity
-            android:name=".product.home.ui.SplashActivity"
+            android:name=".home.ui.SplashActivity"
             android:exported="true" />
         <activity
-            android:name=".product.home.ui.MainActivity"
+            android:name=".home.ui.MainActivity"
             android:exported="true" />
     </application>
 
