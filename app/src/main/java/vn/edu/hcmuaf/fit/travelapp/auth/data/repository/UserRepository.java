@@ -147,7 +147,7 @@ public class UserRepository {
 
     public void deleteUserById(String userId, OnUserDeleteListener listener) {
         usersRef.document(userId)
-                .update("isDeleted", true)
+                .update("deleted", true)
                 .addOnSuccessListener(aVoid -> listener.onSuccess())
                 .addOnFailureListener(e -> listener.onFailure(e.getMessage()));
     }
