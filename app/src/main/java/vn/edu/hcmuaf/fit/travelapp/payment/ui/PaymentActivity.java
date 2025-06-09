@@ -14,6 +14,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONObject;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,39 +57,8 @@ public class PaymentActivity extends AppCompatActivity {
 
         double totalPrice = product.getPrice();
         totalString = String.format("%.0f", totalPrice);
-
-        testMacGenerate();
     }
 
-    private void testMacGenerate() {
-        try {
-            String app_id = "2554";
-            String app_user = "Android_Demo";
-            String app_trans_id = "240608_000001";
-            String app_time = String.valueOf(System.currentTimeMillis());
-            String amount = "50000";
-            String embed_data = "{}";
-            String item = "[]";
-            String key1 = "your_mac_key_here"; // Lấy key đúng từ ZaloPay sandbox
-
-            String data = String.format("%s|%s|%s|%s|%s|%s|%s",
-                    app_id, app_trans_id, app_user, amount, app_time, embed_data, item);
-
-            String mac = Helpers.getMac(key1, data);
-
-            Log.d("ZaloPayTest", "app_id = " + app_id);
-            Log.d("ZaloPayTest", "app_trans_id = " + app_trans_id);
-            Log.d("ZaloPayTest", "app_user = " + app_user);
-            Log.d("ZaloPayTest", "amount = " + amount);
-            Log.d("ZaloPayTest", "app_time = " + app_time);
-            Log.d("ZaloPayTest", "embed_data = " + embed_data);
-            Log.d("ZaloPayTest", "item = " + item);
-            Log.d("ZaloPayTest", "mac = " + mac);
-            Log.d("ZaloPayTest", "app_time = " + app_time);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private void setVariable() {
         binding.titleTxt.setText(product.getName());
@@ -116,19 +86,25 @@ public class PaymentActivity extends AppCompatActivity {
         item.setProductId(product.getProductId());
         item.setQuantity(1);
         item.setUnitPrice(product.getPrice());
-        item.setTourDate(Timestamp.now()); // hoặc lấy từ product
-        item.setGuestName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName()); // nếu cần
+        item.setTourDate(Timestamp.now());
+        item.setGuestName(
+                FirebaseAuth.getInstance()
+                        .getCurrentUser()
+                        .getDisplayName()
+        );
         items.add(item);
 
-        // Lấy userId từ FirebaseAuth
+        // 2. Lấy các thông tin cần thiết
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         double totalAmount = product.getPrice();
         String paymentMethod = "ZaloPay";
-        Timestamp departureDate = Timestamp.now(); // hoặc product.getDepartureDate()
+        Timestamp departureDate = Timestamp.now();
+        String imageUrl = product.getImageUrl();
 
-        // 2. Tạo order trên Firestore
+        // 3. Tạo order trên Firestore, truyền thêm imageUrl
         orderRepo.createOrderWithItems(
                 userId,
+                imageUrl,
                 totalAmount,
                 paymentMethod,
                 departureDate,
@@ -137,18 +113,17 @@ public class PaymentActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String orderId) {
                         Log.d("OrderRepo", "Order created: " + orderId);
-                        // 3. Gọi ZaloPay
+                        // 4. Gọi ZaloPay khi đã tạo xong order
                         payWithZaloPay(orderId);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        Log.e("PaymentActivity", "Failed create order", e);
+                        Log.e("PaymentActivity", "Failed to create order", e);
                     }
                 }
         );
     }
-
 
     private void payWithZaloPay(String orderId) {
         try {

@@ -1,6 +1,7 @@
 package vn.edu.hcmuaf.fit.travelapp.order.model;
 
 import java.io.Serializable;
+
 import com.google.firebase.Timestamp;
 
 /**
@@ -11,10 +12,8 @@ public class OrderItem implements Serializable {
     private String productId;
     private int quantity;
     private double unitPrice;
-    private Timestamp tourDate;  // Optional: date of tour
-    private String guestName;    // Optional: name of guest
-
-    // Default constructor for Firestore
+    private Timestamp tourDate;
+    private String guestName;
     public OrderItem() {}
 
     public OrderItem(String itemId, String productId, int quantity, double unitPrice,

@@ -20,7 +20,7 @@
         android:theme="@style/Theme.TravelApp"
         tools:targetApi="31">
         <activity
-            android:name=".admin.userManagement.ui.EditUserActivity"
+            android:name=".order.TransactionActivity"
             android:exported="false" />
         <activity
             android:name=".admin.userManagement.ui.UserManagementActivity"
