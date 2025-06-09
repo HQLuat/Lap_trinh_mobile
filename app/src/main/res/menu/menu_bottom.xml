@@ -15,7 +15,7 @@
         app:cnb_iconColor="@color/white" />
 
     <item
-        android:id="@+id/orderHistory"
+        android:id="@+id/transaction"
         android:icon="@drawable/bottom_transaction"
         android:title="Transaction"
         app:cnb_backgroundColor="@color/purple"

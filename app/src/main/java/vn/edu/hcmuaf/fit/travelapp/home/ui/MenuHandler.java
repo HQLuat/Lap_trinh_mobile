@@ -7,6 +7,7 @@ import com.ismaeldivita.chipnavigation.ChipNavigationBar;
 
 import vn.edu.hcmuaf.fit.travelapp.R;
 import vn.edu.hcmuaf.fit.travelapp.auth.ui.ProfileActivity;
+import vn.edu.hcmuaf.fit.travelapp.order.TransactionActivity;
 
 public class MenuHandler {
     private Activity activity;
@@ -31,7 +32,9 @@ public class MenuHandler {
                 Intent intent = new Intent(activity, MainActivity.class);
                 activity.startActivity(intent);
             } else if (id == R.id.favorites) {
-            } else if (id == R.id.orderHistory) {
+            } else if (id == R.id.transaction) {
+                Intent intent = new Intent(activity, TransactionActivity.class);
+                activity.startActivity(intent);
             } else if (id == R.id.profile) {
                 Intent intent = new Intent(activity, ProfileActivity.class);
                 activity.startActivity(intent);

@@ -23,4 +23,30 @@
     <color name="dashboard_item_2">#4DE9C9</color>
     <color name="dashboard_item_3">#72A4FF</color>
     <color name="dashboard_item_4">#8B72FF</color>
+
+
+    <!-- Base Colors -->
+    <color name="primary_light">#8A99FF</color>
+    <color name="primary_dark">#4559CB</color>
+    <color name="on_primary">#FFFFFFFF</color>
+
+    <!-- Secondary Palette -->
+    <color name="secondary">#4DE9C9</color>
+    <color name="secondary_light">#A6FFF4</color>
+    <color name="secondary_dark">#00B393</color>
+    <color name="on_secondary">#000000</color>
+
+    <!-- Surface & Background -->
+    <color name="surface">#FFFFFFFF</color>
+    <color name="on_surface">#000000</color>
+    <color name="on_background">#000000</color>
+
+    <!-- Error, Warning, Info, Success -->
+    <color name="error">#B00020</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+    <color name="success">#4CAF50</color>
+
+
+
 </resources>

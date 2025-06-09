@@ -10,6 +10,7 @@ import java.util.List;
 public class Order implements Serializable {
     private String orderId;
     private String userId;
+    private String imageUrl;
     private double totalAmount;
     private String paymentMethod;
     private String paymentStatus;  // PENDING, PAID, CANCELED
@@ -18,13 +19,16 @@ public class Order implements Serializable {
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
+    private List<OrderItem> items;
+
     // Default constructor required for calls to DataSnapshot.getValue(Order.class)
     public Order() {}
 
-    public Order(String orderId, String userId, double totalAmount, String paymentMethod, String paymentStatus,
+    public Order(String orderId, String userId,String imageUrl, double totalAmount, String paymentMethod, String paymentStatus,
                  Timestamp departureDate, String status, Timestamp createdAt, Timestamp updatedAt) {
         this.orderId = orderId;
         this.userId = userId;
+        this.imageUrl = imageUrl;
         this.totalAmount = totalAmount;
         this.paymentMethod = paymentMethod;
         this.paymentStatus = paymentStatus;
@@ -32,6 +36,21 @@ public class Order implements Serializable {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public Order(String orderId, String userId,String imageUrl, double totalAmount, String paymentMethod, String paymentStatus,
+                 Timestamp departureDate, String status, Timestamp createdAt, Timestamp updatedAt, List<OrderItem> items) {
+        this.orderId = orderId;
+        this.userId = userId;
+        this.imageUrl = imageUrl;
+        this.totalAmount = totalAmount;
+        this.paymentMethod = paymentMethod;
+        this.paymentStatus = paymentStatus;
+        this.departureDate = departureDate;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.items = items;
     }
 
     // Getters and Setters
@@ -61,4 +80,19 @@ public class Order implements Serializable {
 
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
+    public List<OrderItem> getItems() {
+        return items;
+    }
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
