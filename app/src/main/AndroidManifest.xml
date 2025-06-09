@@ -86,6 +86,9 @@
         <activity
             android:name=".home.ui.MainActivity"
             android:exported="true" />
+        <activity
+            android:name=".admin.userManagement.ui.EditUserActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

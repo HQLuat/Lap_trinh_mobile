@@ -30,12 +30,24 @@
         <EditText
             android:id="@+id/et_product_name"
             style="@style/StyledEditText"
-            android:hint="Tên sản phẩm" />
+            android:hint="Tên sản phẩm"
+            android:maxLines="1"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:scrollHorizontally="false" />
 
         <EditText
             android:id="@+id/et_product_description"
             style="@style/StyledEditText"
-            android:hint="Mô tả" />
+            android:hint="Mô tả"
+            android:maxLines="4"
+            android:scrollbars="vertical"
+            android:overScrollMode="always"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:scrollHorizontally="false" />
 
         <EditText
             android:id="@+id/et_product_price"
