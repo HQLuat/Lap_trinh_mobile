@@ -1,4 +1,4 @@
-// File: app/src/main/java/vn/edu/hcmuaf/fit/travelapp/order/model/Order.java
+// File: Order.java
 package vn.edu.hcmuaf.fit.travelapp.order.model;
 
 import android.os.Parcel;
@@ -7,54 +7,42 @@ import android.os.Parcelable;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.Exclude;
 
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import vn.edu.hcmuaf.fit.travelapp.order.utils.OrderUtils;
 
-
-/**
- * Model representing an Order in Firestore, có thêm field destination.
- */
 public class Order implements Parcelable {
     private String orderId;
     private String userId;
     private String imageUrl;
     private double totalAmount;
     private String paymentMethod;
-    private String paymentStatus;  // PENDING, PAID, FAILED, CANCELED
+    private String paymentStatus;
     private Timestamp departureDate;
-    private String status;         // NEW, CONFIRMED, CANCELED
+    private String status;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-
-    private String destination;    // thêm field destination
+    private String destination;
     private List<OrderItem> items;
 
-    @Exclude
-    private PaymentStatus paymentStatusEnum;
-    @Exclude
-    private OrderStatus orderStatusEnum;
+    // Các field bổ sung cho ZaloPay
+    private String appTransId;
+    private String zpTransToken;
+    private String zpTransId;
+    private String refundId;
 
-    // Default constructor required for Firestore
+    // Firestore không lưu enum
+    @Exclude private PaymentStatus paymentStatusEnum;
+    @Exclude private OrderStatus orderStatusEnum;
+
     public Order() {}
 
-    // Constructor đầy đủ (khi khởi tạo phía client, truyền destination)
-    public Order(String orderId,
-                 String userId,
-                 String imageUrl,
-                 double totalAmount,
-                 String paymentMethod,
-                 String paymentStatus,
-                 Timestamp departureDate,
-                 String status,
-                 Timestamp createdAt,
-                 Timestamp updatedAt,
-                 String destination,
-                 List<OrderItem> items) {
+    public Order(String orderId, String userId, String imageUrl, double totalAmount,
+                 String paymentMethod, String paymentStatus, Timestamp departureDate,
+                 String status, Timestamp createdAt, Timestamp updatedAt,
+                 String destination, List<OrderItem> items) {
         this.orderId = orderId;
         this.userId = userId;
         this.imageUrl = imageUrl;
@@ -69,7 +57,6 @@ public class Order implements Parcelable {
         this.items = items;
     }
 
-    // Parcelable constructor
     protected Order(Parcel in) {
         orderId = in.readString();
         userId = in.readString();
@@ -83,6 +70,12 @@ public class Order implements Parcelable {
         updatedAt = OrderUtils.ParcelUtils.readTimestamp(in);
         destination = in.readString();
         items = in.createTypedArrayList(OrderItem.CREATOR);
+
+        // Read ZaloPay fields
+        appTransId = in.readString();
+        zpTransToken = in.readString();
+        zpTransId = in.readString();
+        refundId = in.readString();
     }
 
     @Override
@@ -99,6 +92,12 @@ public class Order implements Parcelable {
         OrderUtils.ParcelUtils.writeTimestamp(dest, updatedAt);
         dest.writeString(destination);
         dest.writeTypedList(items);
+
+        // Write ZaloPay fields
+        dest.writeString(appTransId);
+        dest.writeString(zpTransToken);
+        dest.writeString(zpTransId);
+        dest.writeString(refundId);
     }
 
     @Override public int describeContents() { return 0; }
@@ -130,6 +129,7 @@ public class Order implements Parcelable {
         this.paymentStatus = paymentStatus;
         this.paymentStatusEnum = null;
     }
+
     @Exclude
     public PaymentStatus getPaymentStatusEnum() {
         if (paymentStatusEnum == null && paymentStatus != null) {
@@ -137,6 +137,7 @@ public class Order implements Parcelable {
         }
         return paymentStatusEnum;
     }
+
     public void setPaymentStatusEnum(PaymentStatus statusEnum) {
         this.paymentStatusEnum = statusEnum;
         this.paymentStatus = statusEnum != null ? statusEnum.toValue() : null;
@@ -144,10 +145,12 @@ public class Order implements Parcelable {
 
     public Timestamp getDepartureDate() { return departureDate; }
     public void setDepartureDate(Timestamp departureDate) { this.departureDate = departureDate; }
+
     @Exclude
     public Date getDepartureDateAsDate() {
         return departureDate != null ? departureDate.toDate() : null;
     }
+
     @Exclude
     public String getFormattedDepartureDate() {
         return OrderUtils.DateUtils.formatDate(getDepartureDateAsDate());
@@ -158,6 +161,7 @@ public class Order implements Parcelable {
         this.status = status;
         this.orderStatusEnum = null;
     }
+
     @Exclude
     public OrderStatus getOrderStatusEnum() {
         if (orderStatusEnum == null && status != null) {
@@ -165,6 +169,7 @@ public class Order implements Parcelable {
         }
         return orderStatusEnum;
     }
+
     public void setOrderStatusEnum(OrderStatus statusEnum) {
         this.orderStatusEnum = statusEnum;
         this.status = statusEnum != null ? statusEnum.toValue() : null;
@@ -172,6 +177,7 @@ public class Order implements Parcelable {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
     @Exclude
     public String getFormattedCreatedAt() {
         return OrderUtils.DateUtils.formatDateTime(
@@ -181,6 +187,7 @@ public class Order implements Parcelable {
 
     public Timestamp getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
     @Exclude
     public String getFormattedUpdatedAt() {
         return OrderUtils.DateUtils.formatDateTime(
@@ -188,21 +195,30 @@ public class Order implements Parcelable {
         );
     }
 
-    public String getDestination() {
-        return destination != null ? destination : "";
-    }
-    public void setDestination(String destination) {
-        this.destination = destination;
-    }
+    public String getDestination() { return destination != null ? destination : ""; }
+    public void setDestination(String destination) { this.destination = destination; }
 
     public List<OrderItem> getItems() {
         return items != null ? items : Collections.emptyList();
     }
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
-    }
+    public void setItems(List<OrderItem> items) { this.items = items; }
+
+    // ===== ZaloPay fields =====
+
+    public String getAppTransId() { return appTransId; }
+    public void setAppTransId(String appTransId) { this.appTransId = appTransId; }
+
+    public String getZpTransToken() { return zpTransToken; }
+    public void setZpTransToken(String zpTransToken) { this.zpTransToken = zpTransToken; }
+
+    public String getZpTransId() { return zpTransId; }
+    public void setZpTransId(String zpTransId) { this.zpTransId = zpTransId; }
+
+    public String getRefundId() { return refundId; }
+    public void setRefundId(String refundId) { this.refundId = refundId; }
 
     // ===== Nested enums =====
+
     public enum PaymentStatus {
         PENDING, PAID, FAILED, CANCELED;
         public static PaymentStatus fromString(String s) {
@@ -219,27 +235,32 @@ public class Order implements Parcelable {
         }
         public String toValue() { return name(); }
     }
+
     public enum OrderStatus {
-        NEW, CONFIRMED, CANCELED;
+        NEW, CONFIRMED, CANCELLATION_REQUESTED, REFUNDED, CANCELED;
         public static OrderStatus fromString(String s) {
             return OrderUtils.EnumUtils.safeValueOf(OrderStatus.class, s);
         }
+        public String toValue() { return name(); }
         public String toDisplayText() {
             switch (this) {
                 case NEW: return "Mới";
                 case CONFIRMED: return "Đã xác nhận";
+                case CANCELLATION_REQUESTED: return "Đang chờ hủy";
+                case REFUNDED: return "Đã hoàn tiền";
                 case CANCELED: return "Đã hủy";
                 default: return "Không rõ";
             }
         }
-        public String toValue() { return name(); }
     }
 
-    // Field name constants (nếu cần)
+    // Field name constants (Firestore)
     @Exclude public static final String FIELD_ORDER_ID = "orderId";
     @Exclude public static final String FIELD_USER_ID = "userId";
     @Exclude public static final String FIELD_DESTINATION = "destination";
     @Exclude public static final String FIELD_PAYMENT_STATUS = "paymentStatus";
     @Exclude public static final String FIELD_STATUS = "status";
-    // ... các FIELD_ khác
+    @Exclude public static final String FIELD_APP_TRANS_ID = "appTransId";
+    @Exclude public static final String FIELD_ZP_TRANS_ID = "zpTransId";
+    @Exclude public static final String FIELD_REFUND_ID = "refundId";
 }

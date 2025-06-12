@@ -1,13 +1,15 @@
 package vn.edu.hcmuaf.fit.travelapp.order;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.ismaeldivita.chipnavigation.ChipNavigationBar;
@@ -23,37 +25,27 @@ import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderListCallback;
 import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderRepository;
 import vn.edu.hcmuaf.fit.travelapp.order.model.Order;
 
-/**
- * Activity hiển thị lịch sử đơn hàng của người dùng.
- * Sử dụng RecyclerView với OrderHistoryAdapter để trình bày danh sách đơn hàng.
- */
 public class OrdersHistoryActivity extends AppCompatActivity {
 
     private ActivityOrdersHistoryBinding binding;
-    private RecyclerView rvOrderHistory;
     private OrderHistoryAdapter adapter;
     private List<Order> orderList = new ArrayList<>();
     private OrderRepository orderRepository;
     private String currentUserId;
     private MenuHandler menuHandler;
 
-    /**
-     * Khởi tạo Activity và thiết lập giao diện, menu, kiểm tra đăng nhập,
-     * khởi tạo RecyclerView và tác vụ tải đơn hàng.
-     * @param savedInstanceState trạng thái trước đó của Activity (nếu có)
-     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityOrdersHistoryBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Thiết lập bottom navigation và đánh dấu tab hiện tại
+        // Bottom nav
         ChipNavigationBar bottomNavigation = findViewById(R.id.bottomNavigation);
         menuHandler = new MenuHandler(this, bottomNavigation, R.id.orderHistory);
         menuHandler.setupMenu();
 
-        // Kiểm tra đăng nhập; nếu chưa, hiển thị thông báo và đóng Activity
+        // Check login
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
             Toast.makeText(this, "Vui lòng đăng nhập để xem lịch sử đơn hàng", Toast.LENGTH_SHORT).show();
             finish();
@@ -63,12 +55,22 @@ public class OrdersHistoryActivity extends AppCompatActivity {
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         binding.rvOrderHistory.setLayoutManager(new LinearLayoutManager(this));
 
-        // Khởi tạo adapter và gán listener cho sự kiện click
-        adapter = new OrderHistoryAdapter(orderList, order -> {
-            // TODO: Mở OrderDetailActivity khi click vào đơn hàng
-            // Intent intent = new Intent(this, OrderDetailActivity.class);
-            // intent.putExtra("orderId", order.getOrderId());
-            // startActivity(intent);
+        // Adapter với listener mới
+        adapter = new OrderHistoryAdapter(orderList, new OrderHistoryAdapter.OnOrderClickListener() {
+            @Override
+            public void onOrderClicked(Order order) {
+                // TODO: Mở OrderDetailActivity
+            }
+
+            @Override
+            public void onCancelOrRefundClicked(Order order) {
+                Order.PaymentStatus ps = order.getPaymentStatusEnum();
+                if (ps == Order.PaymentStatus.PENDING) {
+                    confirmCancel(order);
+                } else if (ps == Order.PaymentStatus.PAID) {
+                    confirmRefund(order);
+                }
+            }
         });
         binding.rvOrderHistory.setAdapter(adapter);
 
@@ -76,14 +78,8 @@ public class OrdersHistoryActivity extends AppCompatActivity {
         loadOrders();
     }
 
-    /**
-     * Gửi yêu cầu tải danh sách đơn hàng kèm chi tiết từ repository.
-     * Cập nhật adapter hoặc hiển thị thông báo nếu có lỗi.
-     */
     private void loadOrders() {
         orderRepository.getOrdersWithItems(currentUserId, new OrderListCallback() {
-            // Callback khi tải đơn hàng thành công.
-            // @param orders danh sách đơn hàng nhận được
             @Override
             public void onSuccess(List<Order> orders) {
                 orderList.clear();
@@ -96,8 +92,6 @@ public class OrdersHistoryActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
 
-            //Callback khi tải đơn hàng thất bại.
-            //@param e ngoại lệ phát sinh trong quá trình tải
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.e("OrderLoadError", "Lỗi khi tải đơn hàng", e);
@@ -106,5 +100,47 @@ public class OrdersHistoryActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void confirmCancel(Order order) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận hủy đơn")
+                .setMessage("Bạn có chắc muốn hủy đơn này không?")
+                .setPositiveButton("Có", (dialog, which) -> orderRepository.cancelOrderBeforePayment(
+                                order.getOrderId(),
+                                order.getOrderId() /* appTransId phải đúng giá trị ban đầu */)
+                        .addOnSuccessListener(zpResp -> {
+                            Toast.makeText(OrdersHistoryActivity.this,
+                                    "Hủy đơn thành công", Toast.LENGTH_SHORT).show();
+                            loadOrders();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(OrdersHistoryActivity.this,
+                                    "Lỗi hủy đơn: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }))
+                .setNegativeButton("Không", null)
+                .show();
+    }
+
+    private void confirmRefund(Order order) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xác nhận hoàn tiền")
+                .setMessage("Bạn có chắc muốn hoàn tiền đơn này không?")
+                .setPositiveButton("Có", (dialog, which) -> orderRepository.refundPaidOrder(
+                                order.getOrderId(),
+                                order.getOrderId() /* zpTransId thực tế */ ,
+                                String.valueOf((long) order.getTotalAmount()),
+                                "Khách yêu cầu hoàn")
+                        .addOnSuccessListener(zpResp -> {
+                            Toast.makeText(OrdersHistoryActivity.this,
+                                    "Hoàn tiền thành công", Toast.LENGTH_SHORT).show();
+                            loadOrders();
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(OrdersHistoryActivity.this,
+                                    "Lỗi hoàn tiền: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }))
+                .setNegativeButton("Không", null)
+                .show();
     }
 }

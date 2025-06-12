@@ -1,6 +1,8 @@
 package vn.edu.hcmuaf.fit.travelapp.order.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -20,6 +22,7 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
 
     public interface OnOrderClickListener {
         void onOrderClicked(Order order);
+        void onCancelOrRefundClicked(Order order);
     }
 
     public OrderHistoryAdapter(List<Order> orders, OnOrderClickListener listener) {
@@ -55,7 +58,6 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
         }
 
         void bind(Order order, OnOrderClickListener listener) {
-            // Ảnh thumbnail của order (theo model)
             String imageUrl = order.getImageUrl();
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(binding.imgThumbnail.getContext())
@@ -64,29 +66,38 @@ public class OrderHistoryAdapter extends RecyclerView.Adapter<OrderHistoryAdapte
             } else {
                 binding.imgThumbnail.setImageResource(android.R.color.darker_gray);
             }
-
-            // Destination
             binding.tvDestination.setText(order.getDestination());
-
-            // Ngày (ví dụ show departure date hoặc createdAt)
-//            String dateText = order.getFormattedDepartureDate();
-//            if (dateText.isEmpty()) {
-//                dateText = order.getFormattedCreatedAt();
-//            }
-//            binding.tvDate.setText(dateText);
-
-            // Tổng tiền
             binding.tvAmount.setText(String.format("%,.0f ₫", order.getTotalAmount()));
-
-            // Trạng thái thanh toán (display)
             Order.PaymentStatus psEnum = order.getPaymentStatusEnum();
             String statusDisplay = psEnum != null ? psEnum.toDisplayText() : "Không rõ";
             binding.tvStatus.setText(statusDisplay);
-
-            // Nếu có nút chi tiết
             binding.btnDetails.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onOrderClicked(order);
+                }
+            });
+
+            // Xác định nếu được phép hủy (pending) hoặc hoàn tiền (paid)
+            Order.PaymentStatus ps = order.getPaymentStatusEnum();
+            boolean canCancel = ps == Order.PaymentStatus.PENDING || ps == Order.PaymentStatus.FAILED;
+            boolean canRefund = ps == Order.PaymentStatus.PAID;
+
+            if (canCancel) {
+                binding.btnCancel.setText("Hủy đặt");
+                binding.btnCancel.setVisibility(View.VISIBLE);
+            }
+            else if (canRefund) {
+                binding.btnCancel.setText("Hoàn tiền");
+                binding.btnCancel.setVisibility(View.VISIBLE);
+            }
+            else {
+                binding.btnCancel.setVisibility(View.GONE);
+            }
+
+            binding.btnCancel.setOnClickListener(v -> {
+                Log.d("Adapter", "Cancel/Refund button clicked for order: " + order.getOrderId());
+                if (listener != null) {
+                    listener.onCancelOrRefundClicked(order);
                 }
             });
         }
