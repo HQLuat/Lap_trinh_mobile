@@ -20,7 +20,10 @@
         android:theme="@style/Theme.TravelApp"
         tools:targetApi="31">
         <activity
-            android:name=".order.TransactionActivity"
+            android:name=".payment.ui.RefundActivity"
+            android:exported="false" />
+        <activity
+            android:name=".order.OrdersHistoryActivity"
             android:exported="false" />
         <activity
             android:name=".admin.userManagement.ui.UserManagementActivity"
@@ -67,7 +70,7 @@
             android:exported="false" />
         <activity
             android:name=".auth.ui.SplashAuthenticationActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -14,17 +14,17 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import org.json.JSONObject;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import vn.edu.hcmuaf.fit.travelapp.databinding.ActivityPaymentBinding;
 import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderCreationCallback;
-import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderRepo;
+import vn.edu.hcmuaf.fit.travelapp.order.data.repository.OrderRepository;
+import vn.edu.hcmuaf.fit.travelapp.order.model.Order;
 import vn.edu.hcmuaf.fit.travelapp.order.model.OrderItem;
 import vn.edu.hcmuaf.fit.travelapp.payment.Api.CreateOrder;
-import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
 import vn.edu.hcmuaf.fit.travelapp.admin.productManagement.data.model.Product;
+import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
 import vn.zalopay.sdk.Environment;
 import vn.zalopay.sdk.ZaloPayError;
 import vn.zalopay.sdk.ZaloPaySDK;
@@ -33,13 +33,13 @@ import vn.zalopay.sdk.listeners.PayOrderListener;
 public class PaymentActivity extends AppCompatActivity {
     private ActivityPaymentBinding binding;
     private Product product;
-    private OrderRepo orderRepo;
+    private OrderRepository orderRepo;
     String totalString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        orderRepo = new OrderRepo();  // Khởi tạo repo Firebase
+        orderRepo = new OrderRepository();  // Khởi tạo repo Firebase
         EdgeToEdge.enable(this);
         binding = ActivityPaymentBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -83,6 +83,7 @@ public class PaymentActivity extends AppCompatActivity {
         // 1. Chuẩn bị OrderItem list
         List<OrderItem> items = new ArrayList<>();
         OrderItem item = new OrderItem();
+        // Chỉ set các trường cần cho Firestore; itemId sẽ được set trong OrderRepo
         item.setProductId(product.getProductId());
         item.setQuantity(1);
         item.setUnitPrice(product.getPrice());
@@ -94,55 +95,80 @@ public class PaymentActivity extends AppCompatActivity {
         );
         items.add(item);
 
-        // 2. Lấy các thông tin cần thiết
+        // 2. Thông tin order
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         double totalAmount = product.getPrice();
         String paymentMethod = "ZaloPay";
         Timestamp departureDate = Timestamp.now();
         String imageUrl = product.getImageUrl();
+        String destinationString = product.getName();
 
-        // 3. Tạo order trên Firestore, truyền thêm imageUrl
+        // Sinh appTransId đúng định dạng
+        String appTransId = Helpers.getAppTransId();
+
+        // 3. Tạo order trên Firestore
         orderRepo.createOrderWithItems(
                 userId,
                 imageUrl,
                 totalAmount,
                 paymentMethod,
                 departureDate,
+                destinationString,
                 items,
+                appTransId,
                 new OrderCreationCallback() {
                     @Override
                     public void onSuccess(String orderId) {
-                        Log.d("OrderRepo", "Order created: " + orderId);
+                        Log.d("PaymentActivity", "Order created: " + orderId);
                         // 4. Gọi ZaloPay khi đã tạo xong order
-                        payWithZaloPay(orderId);
+                        payWithZaloPay(orderId, appTransId);
                     }
 
                     @Override
                     public void onFailure(Exception e) {
                         Log.e("PaymentActivity", "Failed to create order", e);
+                        // Có thể show Toast báo lỗi tạo order
                     }
                 }
         );
     }
 
-    private void payWithZaloPay(String orderId) {
+    private void payWithZaloPay(String orderId, String appTransId) {
         try {
             CreateOrder orderApi = new CreateOrder();
-            JSONObject data = orderApi.createOrder(totalString);
+            // Truyền orderId làm appTransId
+            JSONObject data = orderApi.createOrder(totalString, appTransId);
             Log.d("ZaloPayDebug", "createOrder response: " + data.toString());
             String code = data.getString("return_code");
 
             if (code.equals("1")) {
                 String token = data.getString("zp_trans_token");
+                String paymentUrl = data.optString("order_url");
                 Log.d("ZaloPayDebug", "Token: " + token);
+
+                // 🔄 Cập nhật Firestore với zpOrderId và paymentUrl
+                orderRepo.updateZaloPayInfo(orderId, token, paymentUrl)
+                        .addOnSuccessListener(unused -> Log.d("ZaloPay", "Order info updated"))
+                        .addOnFailureListener(e -> Log.e("ZaloPay", "Failed to update Firestore", e));
+
                 ZaloPaySDK.getInstance().payOrder(PaymentActivity.this, token, "demozpdk://app", new PayOrderListener() {
                     @Override
                     public void onPaymentSucceeded(String s, String s1, String s2) {
                         Log.d("ZaloPayDebug", "Payment Success: " + s + " | " + s1 + " | " + s2);
                         Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
-                        intent1.putExtra("result","Thanh toán thành công");
+                        intent1.putExtra("result", "Thanh toán thành công");
                         startActivity(intent1);
-                        orderRepo.updatePaymentStatus(orderId, "PAID", "CONFIRMED");
+
+                        // 5. Cập nhật trạng thái order: dùng enum từ model
+                        orderRepo.updatePaymentStatus(orderId,
+                                        Order.PaymentStatus.PAID,
+                                        Order.OrderStatus.CONFIRMED
+                                ).addOnSuccessListener(unused ->
+                                        Log.d("PaymentActivity", "Order status updated to PAID/CONFIRMED"))
+                                .addOnFailureListener(e ->
+                                        Log.e("PaymentActivity", "Failed to update status after success", e)
+                                );
+
                         navigateToResult("Thanh toán thành công");
                     }
 
@@ -150,9 +176,19 @@ public class PaymentActivity extends AppCompatActivity {
                     public void onPaymentCanceled(String s, String s1) {
                         Log.d("ZaloPayDebug", "Payment Canceled: " + s + " | " + s1);
                         Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
-                        intent1.putExtra("result","Huỷ thanh toán");
+                        intent1.putExtra("result", "Huỷ thanh toán");
                         startActivity(intent1);
-                        orderRepo.updatePaymentStatus(orderId, "CANCELED", "CANCELED");
+
+                        // Cập nhật trạng thái thất bại/hủy
+                        orderRepo.updatePaymentStatus(orderId,
+                                        Order.PaymentStatus.CANCELED,
+                                        Order.OrderStatus.CANCELED
+                                ).addOnSuccessListener(unused ->
+                                        Log.d("PaymentActivity", "Order status updated to CANCELED"))
+                                .addOnFailureListener(e ->
+                                        Log.e("PaymentActivity", "Failed to update status after cancel", e)
+                                );
+
                         navigateToResult("Huỷ thanh toán");
                     }
 
@@ -160,13 +196,22 @@ public class PaymentActivity extends AppCompatActivity {
                     public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
                         Log.e("ZaloPayDebug", "Payment Error: " + zaloPayError.toString() + " | " + s + " | " + s1);
                         Intent intent1 = new Intent(PaymentActivity.this, PaymentNotificationActivity.class);
-                        intent1.putExtra("result","Lỗi thanh toán");
+                        intent1.putExtra("result", "Lỗi thanh toán");
                         startActivity(intent1);
-                        orderRepo.updatePaymentStatus(orderId, "FAILED", "CANCELED");
+
+                        orderRepo.updatePaymentStatus(orderId,
+                                        Order.PaymentStatus.FAILED,
+                                        Order.OrderStatus.CANCELED
+                                ).addOnSuccessListener(unused ->
+                                        Log.d("PaymentActivity", "Order status updated to FAILED"))
+                                .addOnFailureListener(e ->
+                                        Log.e("PaymentActivity", "Failed to update status after error", e)
+                                );
+
                         navigateToResult("Lỗi thanh toán");
                     }
                 });
-            }else {
+            } else {
                 Log.e("ZaloPayDebug", "Order creation failed: return_code = " + code);
             }
 
@@ -186,6 +231,7 @@ public class PaymentActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         ZaloPaySDK.getInstance().onResult(intent);
     }
+
     private void getIntentExtra() {
         product = getIntent().getParcelableExtra("object");
     }
