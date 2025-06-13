@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!-- layout/item_order_history.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -12,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="10dp"
         app:cardElevation="3dp"
         app:strokeColor="#E0E0E0"
         app:strokeWidth="1dp"
@@ -21,15 +20,14 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp">
+            android:padding="10dp">
 
             <!-- Ảnh -->
-
-            <!-- Tên địa điểm -->
             <ImageView
                 android:id="@+id/imgThumbnail"
-                android:layout_width="90dp"
+                android:layout_width="100dp"
                 android:layout_height="110dp"
+                android:layout_marginEnd="12dp"
                 android:background="@drawable/rounded_image_bg"
                 android:contentDescription="Thumbnail"
                 android:scaleType="centerCrop"
@@ -38,12 +36,14 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.083" />
 
+            <!-- Tên địa điểm -->
             <TextView
                 android:id="@+id/tvDestination"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Đà Nẵng"
-                android:textSize="18sp"
+                android:layout_marginStart="8dp"
+                android:text="Nha Trang"
+                android:textSize="25sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
                 app:layout_constraintTop_toTopOf="@id/imgThumbnail"
@@ -55,8 +55,9 @@
                 android:id="@+id/ratingContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="4dp"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="@id/tvDestination"
                 app:layout_constraintTop_toBottomOf="@id/tvDestination">
 
@@ -86,6 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp"
                 android:text="Tổng tiền:"
                 android:textColor="#666666"
                 android:textSize="15sp"
@@ -110,6 +112,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:layout_marginStart="8dp"
                 android:text="Trạng thái: Đã thanh toán"
                 android:textColor="#2E7D32"
                 android:textStyle="bold"
@@ -117,73 +120,26 @@
                 app:layout_constraintTop_toBottomOf="@id/tvTotalPrice"
                 app:layout_constraintStart_toStartOf="@id/tvDestination" />
 
-            <!-- Container chứa các nút hành động -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/buttonRow"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+            <!-- Nút Hủy đặt nằm dưới cùng bên phải -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                style="@style/Widget.MaterialComponents.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:text="Hủy đặt"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:backgroundTint="#E0E0E0"
+                app:cornerRadius="8dp"
+                app:elevation="4dp"
+                app:rippleColor="@color/ripple_light_gray"
                 android:layout_marginTop="12dp"
+                android:layout_marginBottom="4dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvStatus"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <!-- Nút Đặt lại -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnReset"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Đặt lại"
-                    android:textAllCaps="false"
-                    android:visibility="gone"
-                    app:cornerRadius="18dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="?attr/colorPrimary"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-
-                <!-- Nút Hủy đặt -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCancel"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Hủy đặt"
-                    android:textAllCaps="false"
-                    android:visibility="visible"
-                    app:cornerRadius="18dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="#FF0000"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-
-                <!-- Nút Xem chi tiết -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnDetails"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Xem chi tiết"
-                    android:textAllCaps="false"
-                    android:textColor="#0288D1"
-                    android:textSize="14sp"
-                    android:layout_marginStart="8dp"
-                    app:iconGravity="textEnd"
-                    app:iconTint="#0288D1"
-                    app:iconPadding="4dp"
-                    app:cornerRadius="20dp"
-                    app:strokeColor="#0288D1"
-                    app:strokeWidth="1dp"
-                    app:rippleColor="#B3E5FC"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                app:layout_constraintBottom_toBottomOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
-
 </LinearLayout>

@@ -46,6 +46,9 @@
     <color name="warning">#FFC107</color>
     <color name="info">#2196F3</color>
     <color name="success">#4CAF50</color>
+    <color name="ripple_light_gray">#BDBDBD</color>
+
+
 
 
 

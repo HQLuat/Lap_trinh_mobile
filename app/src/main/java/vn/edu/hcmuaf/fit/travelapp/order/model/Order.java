@@ -220,39 +220,66 @@ public class Order implements Parcelable {
     // ===== Nested enums =====
 
     public enum PaymentStatus {
-        PENDING, PAID, FAILED, CANCELED;
+        PENDING,
+        PAID,
+        FAILED,
+        CANCELED,
+        REFUND_REQUESTED;
+
         public static PaymentStatus fromString(String s) {
             return OrderUtils.EnumUtils.safeValueOf(PaymentStatus.class, s);
         }
+
         public String toDisplayText() {
             switch (this) {
-                case PAID: return "Đã thanh toán";
-                case PENDING: return "Chờ thanh toán";
-                case FAILED: return "Thanh toán thất bại";
-                case CANCELED: return "Đã hủy";
-                default: return "Không rõ";
+                case PAID:              return "Đã thanh toán";
+                case PENDING:           return "Chờ thanh toán";
+                case FAILED:            return "Thanh toán thất bại";
+                case CANCELED:          return "Đã hủy";
+                case REFUND_REQUESTED:  return "Đang yêu cầu hoàn tiền";
+                default:                return "Không rõ";
             }
         }
-        public String toValue() { return name(); }
+
+        public String toValue() {
+            return name();
+        }
     }
 
     public enum OrderStatus {
-        NEW, CONFIRMED, CANCELLATION_REQUESTED, REFUNDED, CANCELED;
+        NEW,
+        WAITING_PAYMENT,
+        CONFIRMED,
+        CANCELLATION_REQUESTED,
+        CANCELED,
+        REFUND_REQUESTED,
+        REFUNDED,
+        REFUND_FAILED,      // ZaloPay từ chối hoàn tiền
+        REFUND_ERROR;       // lỗi hệ thống khi gọi API
+
         public static OrderStatus fromString(String s) {
             return OrderUtils.EnumUtils.safeValueOf(OrderStatus.class, s);
         }
-        public String toValue() { return name(); }
+
+        public String toValue() {
+            return name();
+        }
+
         public String toDisplayText() {
             switch (this) {
-                case NEW: return "Mới";
-                case CONFIRMED: return "Đã xác nhận";
+                case NEW:                   return "Mới";
+                case CONFIRMED:             return "Đã xác nhận";
                 case CANCELLATION_REQUESTED: return "Đang chờ hủy";
-                case REFUNDED: return "Đã hoàn tiền";
-                case CANCELED: return "Đã hủy";
-                default: return "Không rõ";
+                case CANCELED:              return "Đã hủy";
+                case REFUND_REQUESTED:      return "Đang chờ hoàn tiền";
+                case REFUNDED:              return "Đã hoàn tiền";
+                case REFUND_FAILED:              return "Hoàn tiền thát bại";
+                case REFUND_ERROR:              return "Lỗi hoàn tiền";
+                default:                    return "Không rõ";
             }
         }
     }
+
 
     // Field name constants (Firestore)
     @Exclude public static final String FIELD_ORDER_ID = "orderId";
