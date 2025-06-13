@@ -29,13 +29,13 @@ import vn.edu.hcmuaf.fit.travelapp.order.model.Order;
 import vn.edu.hcmuaf.fit.travelapp.order.model.Order.OrderStatus;
 import vn.edu.hcmuaf.fit.travelapp.order.model.Order.PaymentStatus;
 import vn.edu.hcmuaf.fit.travelapp.order.model.OrderItem;
-import vn.edu.hcmuaf.fit.travelapp.payment.Api.CancelOrder;
-import vn.edu.hcmuaf.fit.travelapp.payment.Api.CreateOrder;
 import vn.edu.hcmuaf.fit.travelapp.payment.Api.RefundOrder;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 public class OrderRepository {
     private static final String TAG = "OrderRepo";
-
+    private static final Executor executor = Executors.newCachedThreadPool();
     private final FirebaseFirestore db;
     private final CollectionReference ordersRef;
 
@@ -51,6 +51,7 @@ public class OrderRepository {
                 FirebaseFirestore.getInstance().collection("orders")
         );
     }
+
 
     /**
      * Tạo đơn hàng mới cùng items.
@@ -137,20 +138,11 @@ public class OrderRepository {
         return ordersRef.document(orderId).update(update);
     }
 
-    public Task<Void> updateAppTransId(@NonNull String orderId, @NonNull String appTransId) {
-        return ordersRef.document(orderId).update("appTransId", appTransId)
-                .addOnSuccessListener(unused ->
-                        Log.d(TAG, "updateAppTransId: success for " + orderId))
-                .addOnFailureListener(e ->
-                        Log.e(TAG, "updateAppTransId: failure", e));
-    }
-
-    public Task<Void> updateZpTransId(@NonNull String orderId, @NonNull String zpTransId) {
-        return ordersRef.document(orderId).update("zpTransId", zpTransId)
-                .addOnSuccessListener(unused ->
-                        Log.d(TAG, "updateZpTransId: success for " + orderId))
-                .addOnFailureListener(e ->
-                        Log.e(TAG, "updateZpTransId: failure", e));
+    public Task<Void> updateZaloTransId(String orderId, String zpTransId) {
+        return FirebaseFirestore.getInstance()
+                .collection("orders")
+                .document(orderId)
+                .update("zpTransId", zpTransId);
     }
 
     /**
@@ -161,21 +153,22 @@ public class OrderRepository {
      */
     public Task<JSONObject> cancelOrderBeforePayment(@NonNull String orderId,
                                                      @NonNull String appTransId) {
-        return Tasks.call(() -> {
-            CancelOrder api = new CancelOrder();
-            return api.cancel(appTransId);
-        }).onSuccessTask(zpResponse -> {
-            int returnCode = zpResponse.optInt("return_code", -1);
-            if (returnCode == 0) {
-                return updatePaymentStatus(orderId, PaymentStatus.CANCELED, OrderStatus.CANCELED)
-                        .continueWith(task -> zpResponse);
-            } else {
-                throw new Exception("ZaloPay cancel failed: "
-                        + zpResponse.optString("return_message"));
-            }
-        });
+        // Trường hợp đơn chưa thanh toán: không gọi API ZaloPay, chỉ xử lý nội bộ
+        return updatePaymentStatus(orderId, PaymentStatus.CANCELED, OrderStatus.CANCELED)
+                .continueWith(task -> {
+                    if (task.isSuccessful()) {
+                        // Trả về kết quả giả lập giống ZaloPay để tầng trên xử lý đồng nhất
+                        JSONObject result = new JSONObject();
+                        result.put("return_code", 0);
+                        result.put("return_message", "Hủy đặt vé thành công");
+                        return result;
+                    } else {
+                        // Cập nhật nội bộ thất bại
+                        Exception e = task.getException();
+                        throw new Exception("Hủy đặt vé thất bại", e);
+                    }
+                });
     }
-
     /**
      * Hoàn tiền đơn đã thanh toán:
      * 1. Gọi RefundOrder API với zpTransId, amount, description.
@@ -186,19 +179,35 @@ public class OrderRepository {
                                             @NonNull String zpTransId,
                                             @NonNull String amount,
                                             @NonNull String description) {
-        return Tasks.call(() -> {
+        return Tasks.call(executor, () -> {
             RefundOrder api = new RefundOrder();
-            return api.refund(zpTransId, amount, description);
-        }).onSuccessTask(zpResponse -> {
-            int returnCode = zpResponse.optInt("return_code", -1);
-            if (returnCode == 0) {
-                return updatePaymentStatus(orderId, PaymentStatus.CANCELED, OrderStatus.REFUNDED)
-                        .continueWith(task -> zpResponse);
+            return api.refund(zpTransId, amount, null, description);
+        }).continueWithTask(task -> {
+            if (task.isSuccessful()) {
+                JSONObject zpResponse = task.getResult();
+                int returnCode = zpResponse.optInt("return_code", -1);
+                if (returnCode == 0) {
+                    return updatePaymentStatus(orderId, PaymentStatus.CANCELED, OrderStatus.REFUNDED)
+                            .continueWith(updateTask -> zpResponse);
+                } else {
+                    Log.e(TAG, "ZaloPay refund failed: " + zpResponse.toString());
+                    return updatePaymentStatus(orderId, PaymentStatus.FAILED, OrderStatus.REFUND_FAILED)
+                            .continueWith(updateTask -> {
+                                throw new Exception("ZaloPay refund failed: " + zpResponse.optString("return_message"));
+                            });
+                }
             } else {
-                throw new Exception("ZaloPay refund failed: " + zpResponse.optString("return_message"));
+                Exception e = task.getException();
+                Log.e(TAG, "refundPaidOrder: Gọi API hoàn tiền lỗi", e);
+                Log.e(TAG, "refundPaidOrder: Lỗi = " + (e != null ? e.getMessage() : "unknown"));
+                return updatePaymentStatus(orderId, PaymentStatus.FAILED, OrderStatus.REFUND_ERROR)
+                        .continueWith(updateTask -> {
+                            throw new Exception("Hoàn tiền thất bại do lỗi hệ thống khi gọi API", e);
+                        });
             }
         });
     }
+
 
     /**
      * Lấy danh sách orders của user kèm items, sắp xếp theo createdAt giảm dần.
@@ -357,5 +366,24 @@ public class OrderRepository {
                 });
     }
 
-}
 
+    public interface OrderCancelCallback {
+        void onSuccess();
+        void onError(Throwable t);
+    }
+
+    public interface OrderCreationCallback {
+        void onSuccess(String orderId);
+        void onFailure(Exception e);
+    }
+
+    public interface OrderDetailCallback {
+        void onSuccess(List<Order> orders);
+        void onFailure(@NonNull Exception e);
+    }
+
+    public interface OrderListCallback {
+        void onSuccess(List<Order> orders);
+        void onFailure(Exception e);
+    }
+}
