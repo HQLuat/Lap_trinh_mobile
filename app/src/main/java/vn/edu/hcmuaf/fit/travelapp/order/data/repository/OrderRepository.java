@@ -181,32 +181,47 @@ public class OrderRepository {
                                             @NonNull String description) {
         return Tasks.call(executor, () -> {
             RefundOrder api = new RefundOrder();
-            return api.refund(zpTransId, amount, null, description);
-        }).continueWithTask(task -> {
+            return api.refund(zpTransId, amount, description);
+        }).continueWith(task -> {
             if (task.isSuccessful()) {
                 JSONObject zpResponse = task.getResult();
-                int returnCode = zpResponse.optInt("return_code", -1);
-                if (returnCode == 0) {
-                    return updatePaymentStatus(orderId, PaymentStatus.CANCELED, OrderStatus.REFUNDED)
-                            .continueWith(updateTask -> zpResponse);
-                } else {
-                    Log.e(TAG, "ZaloPay refund failed: " + zpResponse.toString());
-                    return updatePaymentStatus(orderId, PaymentStatus.FAILED, OrderStatus.REFUND_FAILED)
-                            .continueWith(updateTask -> {
-                                throw new Exception("ZaloPay refund failed: " + zpResponse.optString("return_message"));
-                            });
+
+                // Nếu có lỗi từ lớp RefundOrder thì return_code nằm ở root
+                int returnCodeRoot = zpResponse.optInt("return_code", Integer.MIN_VALUE);
+                if (returnCodeRoot != Integer.MIN_VALUE) {
+                    // Đây là lỗi ngay từ đầu (input sai, ký sai, network, ...)
+                    throw new Exception("Refund API lỗi: " + zpResponse.optString("return_message"));
                 }
+
+                // Lấy phản hồi trạng thái thật sự từ ZaloPay (trong status_response)
+                JSONObject statusResponse = zpResponse.optJSONObject("status_response");
+                int returnCode = statusResponse != null ? statusResponse.optInt("return_code", -1) : -1;
+                String returnMessage = statusResponse != null ? statusResponse.optString("return_message", "Không rõ") : "Không rõ";
+                String subMessage = statusResponse != null ? statusResponse.optString("sub_return_message", "") : "";
+
+                switch (returnCode) {
+                    case 1:
+                        Log.d(TAG, "Refund thành công: " + returnMessage);
+                        break;
+                    case 2:
+                        throw new Exception("Refund thất bại: " + subMessage);
+                    case 3:
+                        throw new Exception("Refund đang xử lý: " + returnMessage);
+                    default:
+                        throw new Exception("Không xác định được trạng thái hoàn tiền.");
+                }
+
+                // Trả lại toàn bộ JSON nếu cần dùng tiếp
+                return zpResponse;
+
             } else {
                 Exception e = task.getException();
-                Log.e(TAG, "refundPaidOrder: Gọi API hoàn tiền lỗi", e);
-                Log.e(TAG, "refundPaidOrder: Lỗi = " + (e != null ? e.getMessage() : "unknown"));
-                return updatePaymentStatus(orderId, PaymentStatus.FAILED, OrderStatus.REFUND_ERROR)
-                        .continueWith(updateTask -> {
-                            throw new Exception("Hoàn tiền thất bại do lỗi hệ thống khi gọi API", e);
-                        });
+                Log.e(TAG, "refundPaidOrder: Gọi API lỗi", e);
+                throw new Exception("Gọi API refund thất bại", e);
             }
         });
     }
+
 
 
     /**
@@ -268,104 +283,6 @@ public class OrderRepository {
                     callback.onFailure(e);
                 });
     }
-
-    /**
-     * Tương tự getOrdersWithItems nhưng trả về Task để chaining hoặc LiveData.
-     */
-    public Task<List<Order>> getOrdersWithItemsTask(@NonNull String userId) {
-        return ordersRef
-                .whereEqualTo("userId", userId)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get()
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        throw task.getException();
-                    }
-                    QuerySnapshot qs = task.getResult();
-                    List<Order> orders = new ArrayList<>();
-                    List<Task<QuerySnapshot>> itemTasks = new ArrayList<>();
-                    for (DocumentSnapshot doc : qs.getDocuments()) {
-                        Order order = doc.toObject(Order.class);
-                        if (order != null) {
-                            orders.add(order);
-                            itemTasks.add(ordersRef
-                                    .document(order.getOrderId())
-                                    .collection("items")
-                                    .get());
-                        }
-                    }
-                    if (itemTasks.isEmpty()) {
-                        return Tasks.forResult(Collections.emptyList());
-                    }
-                    return Tasks.whenAllSuccess(itemTasks)
-                            .continueWith(innerTask -> {
-                                if (!innerTask.isSuccessful()) {
-                                    throw innerTask.getException();
-                                }
-                                List<?> rawList = innerTask.getResult(); // List<Object>
-                                for (int i = 0; i < rawList.size(); i++) {
-                                    Object obj = rawList.get(i);
-                                    if (obj instanceof QuerySnapshot) {
-                                        QuerySnapshot itemsSnap = (QuerySnapshot) obj;
-                                        List<OrderItem> itemList = new ArrayList<>();
-                                        for (DocumentSnapshot itemDoc : itemsSnap.getDocuments()) {
-                                            OrderItem item = itemDoc.toObject(OrderItem.class);
-                                            if (item != null) {
-                                                itemList.add(item);
-                                            }
-                                        }
-                                        orders.get(i).setItems(itemList);
-                                    } else {
-                                        Log.w(TAG, "Unexpected itemTasks result type: " + obj);
-                                        orders.get(i).setItems(Collections.emptyList());
-                                    }
-                                }
-                                return orders;
-                            });
-                });
-    }
-
-    /**
-     * Lấy chi tiết một order.
-     * 1. Lấy document order theo orderId.
-     * 2. Nếu tồn tại, lấy subcollection items và gán vào model.
-     */
-    public void getOrderDetail(@NonNull String orderId,
-                               @NonNull OrderDetailCallback callback) {
-        DocumentReference orderDocRef = ordersRef.document(orderId);
-        orderDocRef.get()
-                .addOnSuccessListener(docSnap -> {
-                    if (!docSnap.exists()) {
-                        callback.onFailure(new Exception("Order not found: " + orderId));
-                        return;
-                    }
-                    Order order = docSnap.toObject(Order.class);
-                    if (order == null) {
-                        callback.onFailure(new Exception("Failed to parse Order: " + orderId));
-                        return;
-                    }
-                    // Fetch items
-                    orderDocRef.collection("items").get()
-                            .addOnSuccessListener(itemsSnap -> {
-                                List<OrderItem> itemList = new ArrayList<>();
-                                for (DocumentSnapshot itemDoc : itemsSnap.getDocuments()) {
-                                    OrderItem item = itemDoc.toObject(OrderItem.class);
-                                    if (item != null) itemList.add(item);
-                                }
-                                order.setItems(itemList);
-                                callback.onSuccess((List<Order>) order);
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e(TAG, "getOrderDetail: failure fetching items for " + orderId, e);
-                                callback.onFailure(e);
-                            });
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "getOrderDetail: failure fetching order " + orderId, e);
-                    callback.onFailure(e);
-                });
-    }
-
 
     public interface OrderCancelCallback {
         void onSuccess();

@@ -2,129 +2,152 @@ package vn.edu.hcmuaf.fit.travelapp.payment.Api;
 
 import android.util.Log;
 
-import okhttp3.FormBody;
-import okhttp3.RequestBody;
-import org.json.JSONObject;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+
+import okhttp3.FormBody;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import vn.edu.hcmuaf.fit.travelapp.payment.Constant.AppInfo;
 import vn.edu.hcmuaf.fit.travelapp.payment.Helper.Helpers;
 
 public class RefundOrder {
+    private static final String TAG = "ZP_DEBUG(Refund)";
+    private static final int MAX_DESCRIPTION = 100;
 
-    /**
-     * Data for refund request
-     */
+    private void logFormBody(FormBody formBody) {
+        StringBuilder sb = new StringBuilder("FormBody params:\n");
+        for (int i = 0; i < formBody.size(); i++) {
+            sb.append(formBody.name(i)).append(" = ").append(formBody.value(i)).append("\n");
+        }
+        Log.d(TAG, sb.toString());
+    }
+
     private static class RefundOrderData {
         String appId;
-        String mRefundId;
         String zpTransId;
         String amount;
-        String refundFeeAmount; // optional
-        String timestamp;
         String description;
+        String timestamp;
         String mac;
+        String mRefundId;
 
-        /**
-         * @param zpTransId Zalopay transaction ID
-         * @param amount refund amount
-         * @param refundFeeAmount optional fee (pass null if none)
-         * @param description refund reason
-         */
-        public RefundOrderData(String zpTransId, String amount, String refundFeeAmount, String description) throws NoSuchAlgorithmException, InvalidKeyException {
+        public RefundOrderData(String zpTransId, String amount, String description)
+                throws NoSuchAlgorithmException, InvalidKeyException {
+            if (zpTransId == null || zpTransId.length() > 15) {
+                throw new IllegalArgumentException("zp_trans_id must be non-null and ≤15 chars");
+            }
             this.appId = String.valueOf(AppInfo.APP_ID);
             this.zpTransId = zpTransId;
             this.amount = amount;
-            this.refundFeeAmount = refundFeeAmount;
-            this.mRefundId = Helpers.getAppTransId();
-            // Timestamp in seconds
-            long tsSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-            this.timestamp = String.valueOf(tsSeconds);
-            this.description = description;
 
-            // Build HMAC input string
-            StringBuilder sb = new StringBuilder();
-            sb.append(appId)
-                    .append('|').append(mRefundId)
-                    .append('|').append(zpTransId)
-                    .append('|').append(amount);
-            if (refundFeeAmount != null && !refundFeeAmount.isEmpty()) {
-                sb.append('|').append(refundFeeAmount);
+            long tsMillis = System.currentTimeMillis();
+            this.timestamp = String.valueOf(tsMillis);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
+            String datePart = sdf.format(new Date());
+            String randomPart = String.valueOf(new Random().nextInt(1_000_000_000));
+            this.mRefundId = datePart + "_" + appId + "_" + randomPart;
+
+            String desc = description != null ? description.trim() : "";
+            if (desc.length() > MAX_DESCRIPTION) {
+                desc = desc.substring(0, MAX_DESCRIPTION);
             }
-            sb.append('|').append(description)
-                    .append('|').append(timestamp);
+            this.description = desc;
 
-            String inputHmac = sb.toString();
+            String inputHmac = appId + "|" + zpTransId + "|" + amount + "|" + this.description + "|" + timestamp;
             this.mac = Helpers.getMac(AppInfo.MAC_KEY, inputHmac);
 
-            Log.d("ZP_DEBUG(Refund)", "refund_id = " + mRefundId);
-            Log.d("ZP_DEBUG(Refund)", "zp_trans_id = " + zpTransId);
-            Log.d("ZP_DEBUG(Refund)", "amount = " + amount);
-            Log.d("ZP_DEBUG(Refund)", "timestamp = " + timestamp);
-            Log.d("ZP_DEBUG(Refund)", "description = " + description);
-            Log.d("ZP_DEBUG(Refund)", "mac = " + mac);
-
+            Log.d(TAG, "m_refund_id = " + mRefundId);
+            Log.d(TAG, "zp_trans_id = " + zpTransId);
+            Log.d(TAG, "amount = " + amount);
+            Log.d(TAG, "timestamp(ms) = " + timestamp);
+            Log.d(TAG, "timestamp readable = " + formatTimestamp(tsMillis));
+            Log.d(TAG, "description = " + this.description);
+            Log.d(TAG, "mac = " + mac);
         }
     }
 
-    /**
-     * Data for querying refund status
-     */
-    private static class QueryRefundData {
-        String appId;
-        String mRefundId;
-        String timestamp;
-        String mac;
+    public JSONObject refund(String zpTransId, String amount, String description) throws JSONException {
+        try {
+            RefundOrderData input = new RefundOrderData(zpTransId, amount, description);
+            JSONObject refundResp = sendRefundRequest(input);
 
-        public QueryRefundData(String mRefundId) throws NoSuchAlgorithmException, InvalidKeyException {
-            this.appId = String.valueOf(AppInfo.APP_ID);
-            this.mRefundId = mRefundId;
-            long tsSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-            this.timestamp = String.valueOf(tsSeconds);
+            Log.d(TAG, "Querying refund status...");
+            JSONObject statusResp = queryRefundStatus(input.mRefundId);
 
-            String inputHmac = appId + '|' + mRefundId + '|' + timestamp;
-            this.mac = Helpers.getMac(AppInfo.MAC_KEY, inputHmac);
+            JSONObject result = new JSONObject();
+            result.put("refund_response", refundResp);
+            result.put("status_response", statusResp);
+            return result;
+        } catch (IllegalArgumentException iae) {
+            Log.e(TAG, "Invalid param: " + iae.getMessage());
+            JSONObject err = new JSONObject(); err.put("return_code", -97);
+            err.put("return_message", iae.getMessage()); return err;
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            Log.e(TAG, "Signature error: " + e.getMessage());
+            JSONObject err = new JSONObject(); err.put("return_code", -99);
+            err.put("return_message", "Signature error"); return err;
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected error: " + e.getMessage());
+            JSONObject err = new JSONObject(); err.put("return_code", -98);
+            err.put("return_message", "Network or unexpected error"); return err;
         }
     }
 
-    /**
-     * Send refund request
-     * @param zpTransId Zalopay transaction ID to refund
-     * @param amount amount to refund
-     * @param refundFeeAmount optional refund fee (pass null if none)
-     * @param description refund reason
-     */
-    public JSONObject refund(String zpTransId, String amount, String refundFeeAmount, String description) throws Exception {
-        RefundOrderData input = new RefundOrderData(zpTransId, amount, refundFeeAmount, description);
-        FormBody.Builder builder = new FormBody.Builder()
+    private JSONObject sendRefundRequest(RefundOrderData input) throws Exception {
+        FormBody formBody = new FormBody.Builder()
                 .add("m_refund_id", input.mRefundId)
                 .add("app_id", input.appId)
                 .add("zp_trans_id", input.zpTransId)
-                .add("amount", input.amount);
-        if (refundFeeAmount != null && !refundFeeAmount.isEmpty()) {
-            builder.add("refund_fee_amount", refundFeeAmount);
-        }
-        builder.add("timestamp", input.timestamp)
-                .add("description", input.description)
-                .add("mac", input.mac);
-
-        RequestBody formBody = builder.build();
-        return HttpProvider.sendPost(AppInfo.URL_REFUND, formBody);
-    }
-
-    /**
-     * Query refund status
-     * @param mRefundId the refund transaction ID
-     */
-    public JSONObject queryRefundStatus(String mRefundId) throws Exception {
-        QueryRefundData input = new QueryRefundData(mRefundId);
-        RequestBody formBody = new FormBody.Builder()
-                .add("m_refund_id", input.mRefundId)
-                .add("app_id", input.appId)
+                .add("amount", input.amount)
                 .add("timestamp", input.timestamp)
+                .add("description", input.description)
                 .add("mac", input.mac)
                 .build();
-        return HttpProvider.sendPost(AppInfo.URL_REFUND_STATUS, formBody);
+
+        logFormBody(formBody);
+
+        Log.d(TAG, "Sending refund request to " + AppInfo.URL_REFUND);
+        JSONObject resp = HttpProvider.sendPost(AppInfo.URL_REFUND, formBody);
+        Log.d(TAG, "Refund response: " + resp.toString());
+        return resp;
+    }
+
+    private JSONObject queryRefundStatus(String mRefundId) throws JSONException {
+        try {
+            String appId = String.valueOf(AppInfo.APP_ID);
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String inputHmac = appId + "|" + mRefundId + "|" + timestamp;
+            String mac = Helpers.getMac(AppInfo.MAC_KEY, inputHmac);
+
+            FormBody formBody = new FormBody.Builder()
+                    .add("app_id", appId)
+                    .add("m_refund_id", mRefundId)
+                    .add("timestamp", timestamp)
+                    .add("mac", mac)
+                    .build();
+
+            logFormBody(formBody);
+            Log.d(TAG, "Sending refund status query to " + AppInfo.URL_QUERY_REFUND);
+            JSONObject resp = HttpProvider.sendPost(AppInfo.URL_QUERY_REFUND, formBody);
+            Log.d(TAG, "Refund query response: " + resp.toString());
+
+            return resp;
+        } catch (Exception e) {
+            Log.e(TAG, "Refund query error: " + e.getMessage());
+            JSONObject err = new JSONObject(); err.put("return_code", -99);
+            err.put("return_message", "Refund query error"); return err;
+        }
+    }
+
+    private static String formatTimestamp(long millis) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        return sdf.format(new Date(millis));
     }
 }
