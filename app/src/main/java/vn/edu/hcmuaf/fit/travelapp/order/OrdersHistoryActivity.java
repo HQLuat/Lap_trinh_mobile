@@ -70,6 +70,13 @@ public class OrdersHistoryActivity extends AppCompatActivity implements OrdersHi
                     confirmRefund(order);
                 }
             }
+
+            @Override
+            public void onReorderClicked(Order order) {
+                Log.d(TAG, "onReorderClicked: " + order.getOrderId());
+                Toast.makeText(OrdersHistoryActivity.this, "Chức năng 'Đặt lại' chưa được triển khai", Toast.LENGTH_SHORT).show();
+                // TODO: Mở màn hình đặt lại hoặc sao chép đơn hàng
+            }
         });
         binding.rvOrderHistory.setAdapter(adapter);
 
@@ -140,6 +147,14 @@ public class OrdersHistoryActivity extends AppCompatActivity implements OrdersHi
     public void onRefundSuccess() {
         Log.d(TAG, "onRefundSuccess: Hoàn tiền thành công");
         Toast.makeText(this, "Hoàn tiền thành công", Toast.LENGTH_SHORT).show();
+        loadOrders();
+    }
+
+    @Override
+    public void onRefundPending() {
+        Log.d(TAG, "onRefundPending: Yêu cầu hoàn tiền đang xử lý");
+        Toast.makeText(this, "Yêu cầu hoàn tiền đã gửi, đang xử lý", Toast.LENGTH_SHORT).show();
+        // Tải lại danh sách để cập nhật trạng thái REFUND_PENDING trong UI
         loadOrders();
     }
 }

@@ -82,6 +82,7 @@ public class RefundOrder {
             JSONObject statusResp = queryRefundStatus(input.mRefundId);
 
             JSONObject result = new JSONObject();
+            result.put("m_refund_id", input.mRefundId);
             result.put("refund_response", refundResp);
             result.put("status_response", statusResp);
             return result;
@@ -119,7 +120,7 @@ public class RefundOrder {
         return resp;
     }
 
-    private JSONObject queryRefundStatus(String mRefundId) throws JSONException {
+    public JSONObject queryRefundStatus(String mRefundId) throws JSONException {
         try {
             String appId = String.valueOf(AppInfo.APP_ID);
             String timestamp = String.valueOf(System.currentTimeMillis());
