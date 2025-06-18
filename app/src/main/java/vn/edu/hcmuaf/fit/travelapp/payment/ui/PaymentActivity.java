@@ -160,10 +160,10 @@ public class PaymentActivity extends AppCompatActivity {
                                 .addOnSuccessListener(unused -> Log.d("PaymentActivity", "Saved zp_trans_id"))
                                 .addOnFailureListener(e -> Log.e("PaymentActivity", "Failed to save zp_trans_id", e));
 
-                        // Cập nhật trạng thái thanh toán
+                        // Cập nhật trạng thái thanh toán: PAID, order sang PAID hoặc CONFIRMED
                         orderRepo.updatePaymentStatus(orderId,
                                         Order.PaymentStatus.PAID,
-                                        Order.OrderStatus.CONFIRMED)
+                                        Order.OrderStatus.CONFIRMED)  // hoặc OrderStatus.PAID nếu tách bước xác nhận
                                 .addOnSuccessListener(unused ->
                                         Log.d("PaymentActivity", "Order status updated to PAID/CONFIRMED"))
                                 .addOnFailureListener(e ->
@@ -177,14 +177,14 @@ public class PaymentActivity extends AppCompatActivity {
                     public void onPaymentCanceled(String s, String s1) {
                         Log.d("ZaloPayDebug", "Payment Canceled: " + s + " | " + s1);
 
+                        // Hủy trước thanh toán: CANCELED
                         orderRepo.updatePaymentStatus(orderId,
                                         Order.PaymentStatus.CANCELED,
-                                        Order.OrderStatus.CANCELED
-                                ).addOnSuccessListener(unused ->
+                                        Order.OrderStatus.CANCELED)
+                                .addOnSuccessListener(unused ->
                                         Log.d("PaymentActivity", "Order status updated to CANCELED"))
                                 .addOnFailureListener(e ->
-                                        Log.e("PaymentActivity", "Failed to update status after cancel", e)
-                                );
+                                        Log.e("PaymentActivity", "Failed to update status after cancel", e));
 
                         navigateToResult("Huỷ thanh toán");
                     }
@@ -193,14 +193,14 @@ public class PaymentActivity extends AppCompatActivity {
                     public void onPaymentError(ZaloPayError zaloPayError, String s, String s1) {
                         Log.e("ZaloPayDebug", "Payment Error: " + zaloPayError.toString() + " | " + s + " | " + s1);
 
+                        // Payment error: đánh dấu FAILED, nhưng vẫn cho retry -> orderStatus = WAITING_PAYMENT
                         orderRepo.updatePaymentStatus(orderId,
                                         Order.PaymentStatus.FAILED,
-                                        Order.OrderStatus.CANCELED
-                                ).addOnSuccessListener(unused ->
-                                        Log.d("PaymentActivity", "Order status updated to FAILED"))
+                                        Order.OrderStatus.WAITING_PAYMENT)
+                                .addOnSuccessListener(unused ->
+                                        Log.d("PaymentActivity", "Order status updated to FAILED/WARNING_PAYMENT"))
                                 .addOnFailureListener(e ->
-                                        Log.e("PaymentActivity", "Failed to update status after error", e)
-                                );
+                                        Log.e("PaymentActivity", "Failed to update status after error", e));
 
                         navigateToResult("Lỗi thanh toán");
                     }
@@ -208,12 +208,12 @@ public class PaymentActivity extends AppCompatActivity {
             } else {
                 Log.e("ZaloPayDebug", "Order creation failed: return_code = " + code);
 
-                // Nếu return_code không phải 1, coi là thất bại
+                // Nếu tạo ZaloPay order thất bại: FAILED, nhưng cho retry -> status vẫn WAITING_PAYMENT
                 orderRepo.updatePaymentStatus(orderId,
                                 Order.PaymentStatus.FAILED,
-                                Order.OrderStatus.NEW)
+                                Order.OrderStatus.WAITING_PAYMENT)
                         .addOnSuccessListener(unused ->
-                                Log.d("PaymentActivity", "Order marked FAILED due to return_code"))
+                                Log.d("PaymentActivity", "Order marked FAILED, chờ retry"))
                         .addOnFailureListener(error ->
                                 Log.e("PaymentActivity", "Failed to update status after return_code error", error));
                 Toast.makeText(this, "Không thể tạo đơn thanh toán. Vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
@@ -223,9 +223,10 @@ public class PaymentActivity extends AppCompatActivity {
             Log.e("ZaloPayDebug", "Exception during order creation: ", e);
             Toast.makeText(this, "Lỗi khi tạo đơn ZaloPay. Vui lòng thử lại sau.", Toast.LENGTH_SHORT).show();
 
+            // Đánh dấu lỗi tạo order: vẫn để chờ retry
             orderRepo.updatePaymentStatus(orderId,
-                            Order.PaymentStatus.PENDING,
-                            Order.OrderStatus.NEW)
+                            Order.PaymentStatus.FAILED,
+                            Order.OrderStatus.WAITING_PAYMENT)
                     .addOnSuccessListener(unused ->
                             Log.d("PaymentActivity", "Order marked FAILED due to exception"))
                     .addOnFailureListener(error ->

@@ -223,19 +223,19 @@ public class Order implements Parcelable {
         PENDING,           // Chưa thanh toán
         PAID,              // Đã thanh toán thành công
         FAILED,            // Thanh toán thất bại
-        CANCELED,          // Hủy giao dịch trước khi thanh toán
+        CANCELED,          // Hủy trước khi thanh toán
         REFUND_REQUESTED,  // Đã gửi yêu cầu hoàn tiền
+        REFUND_PENDING,    // Hoàn tiền đang xử lý
         REFUNDED,          // Hoàn tiền thành công
-        REFUND_FAILED;     // Hoàn tiền thất bại (ZaloPay trả về mã lỗi)
+        REFUND_FAILED,     // Hoàn tiền thất bại (ZaloPay trả về mã lỗi)
+        REFUND_ERROR;      // Lỗi hệ thống khi gọi API hoặc phản hồi không hợp lệ
 
         public static PaymentStatus fromString(String s) {
             return OrderUtils.EnumUtils.safeValueOf(PaymentStatus.class, s);
         }
-
         public String toValue() {
             return name();
         }
-
         public String toDisplayText() {
             switch (this) {
                 case PENDING:           return "Chờ thanh toán";
@@ -243,54 +243,46 @@ public class Order implements Parcelable {
                 case FAILED:            return "Thanh toán thất bại";
                 case CANCELED:          return "Đã hủy giao dịch";
                 case REFUND_REQUESTED:  return "Đang yêu cầu hoàn tiền";
+                case REFUND_PENDING:    return "Đang xử lý hoàn tiền";
                 case REFUNDED:          return "Đã hoàn tiền";
                 case REFUND_FAILED:     return "Hoàn tiền thất bại";
+                case REFUND_ERROR:      return "Lỗi hoàn tiền";
                 default:                return "Không rõ";
             }
         }
     }
 
     public enum OrderStatus {
-        NEW,                      // Đơn mới được tạo
-        WAITING_PAYMENT,          // Đang chờ thanh toán (nếu dùng ZaloPay hoặc phương thức online)
-        CONFIRMED,                // Đơn đã xác nhận (sau khi thanh toán hoặc admin xác nhận)
-        SHIPPING,                 // Đang giao hàng (nếu có)
-        COMPLETED,                // Giao hàng thành công, đơn hoàn tất
-
-        CANCELLATION_REQUESTED,   // Người dùng yêu cầu hủy
-        CANCELED,                 // Đơn đã bị hủy
-
-        REFUND_REQUESTED,         // Đã gửi yêu cầu hoàn tiền
-        REFUND_PENDING,           // Hoàn tiền đang xử lý (ZaloPay return_code = 3)
-        REFUNDED,                 // Hoàn tiền thành công
-        REFUND_FAILED,            // ZaloPay từ chối hoàn tiền (return_code = 2)
-        REFUND_ERROR;             // Lỗi hệ thống khi gọi API hoặc không phản hồi
+        NEW,               // Mới tạo, chưa vào chờ thanh toán
+        WAITING_PAYMENT,   // Chờ thanh toán
+        CANCELED,          // Hủy trước thanh toán hoặc sau hoàn tiền
+        PAID,              // Đã thanh toán, chờ xác nhận
+        CONFIRMED,         // Đã xác nhận
+        COMPLETED,         // Hoàn thành chuyến
+        REFUND_REQUESTED,  // Yêu cầu hoàn tiền
+        REFUND_PENDING,    // Hoàn tiền đang xử lý
+        REFUNDED,          // Hoàn tiền thành công
+        REFUND_FAILED,     // Hoàn tiền thất bại
+        REFUND_ERROR;      // Lỗi khi gọi API refund
 
         public static OrderStatus fromString(String s) {
             return OrderUtils.EnumUtils.safeValueOf(OrderStatus.class, s);
         }
-
-        public String toValue() {
-            return name();
-        }
-
+        public String toValue() { return name(); }
         public String toDisplayText() {
             switch (this) {
-                case NEW:                     return "Mới tạo";
-                case WAITING_PAYMENT:         return "Chờ thanh toán";
-                case CONFIRMED:               return "Đã xác nhận";
-                case SHIPPING:                return "Đang giao hàng";
-                case COMPLETED:               return "Đã hoàn thành";
-
-                case CANCELLATION_REQUESTED:  return "Yêu cầu hủy";
-                case CANCELED:                return "Đã hủy";
-
-                case REFUND_REQUESTED:        return "Yêu cầu hoàn tiền";
-                case REFUND_PENDING:          return "Đang xử lý hoàn tiền";
-                case REFUNDED:                return "Đã hoàn tiền";
-                case REFUND_FAILED:           return "Hoàn tiền thất bại";
-                case REFUND_ERROR:            return "Lỗi hoàn tiền";
-                default:                      return "Không rõ";
+                case NEW:               return "Mới tạo";
+                case WAITING_PAYMENT:   return "Chờ thanh toán";
+                case CANCELED:          return "Đã hủy";
+                case PAID:              return "Đã thanh toán";
+                case CONFIRMED:         return "Đã xác nhận";
+                case COMPLETED:         return "Hoàn thành";
+                case REFUND_REQUESTED:  return "Yêu cầu hoàn tiền";
+                case REFUND_PENDING:    return "Đang xử lý hoàn tiền";
+                case REFUNDED:          return "Đã hoàn tiền";
+                case REFUND_FAILED:     return "Hoàn tiền thất bại";
+                case REFUND_ERROR:      return "Lỗi hoàn tiền";
+                default:                return "Không rõ";
             }
         }
     }

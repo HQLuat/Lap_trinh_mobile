@@ -33,13 +33,24 @@ import vn.edu.hcmuaf.fit.travelapp.payment.Api.RefundOrder;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class OrderRepository {
     private static final String TAG = "OrderRepo";
     private static final Executor executor = Executors.newCachedThreadPool();
     private final FirebaseFirestore db;
     private final CollectionReference ordersRef;
 
-    // Có thể inject FirebaseFirestore và path collection để dễ test.
+    // Trong lớp RefundOrder hoặc lớp Repository của bạn
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+    // Số lần tối đa polling, khoảng cách giữa các lần (giây)
+    private static final int MAX_POLL_ATTEMPTS = 10;
+    private static final int POLL_INTERVAL_SEC = 30;
+
     public OrderRepository(FirebaseFirestore db, CollectionReference ordersRef) {
         this.db = db;
         this.ordersRef = ordersRef;
@@ -124,10 +135,13 @@ public class OrderRepository {
         return ordersRef.document(orderId)
                 .update(updates)
                 .addOnSuccessListener(unused ->
-                        Log.d(TAG, "updatePaymentStatus: success for " + orderId))
+                        Log.d(TAG, "updatePaymentStatus: success for " + orderId
+                                + " -> paymentStatus=" + paymentStatus
+                                + ", orderStatus=" + orderStatus))
                 .addOnFailureListener(e ->
                         Log.e(TAG, "updatePaymentStatus: failure for " + orderId, e));
     }
+
 
     public Task<Void> updateZaloPayInfo(String orderId, String zpTransToken, String paymentUrl) {
         Map<String, Object> update = new HashMap<>();
@@ -169,60 +183,89 @@ public class OrderRepository {
                     }
                 });
     }
-    /**
-     * Hoàn tiền đơn đã thanh toán:
-     * 1. Gọi RefundOrder API với zpTransId, amount, description.
-     * 2. Nếu return_code == 0, cập nhật Firestore: status thành REFUNDED, paymentStatus thành CANCELED.
-     * @return Task<JSONObject> trả về kết quả JSON từ ZaloPay, caller tiếp tục .addOnSuccessListener
-     */
-    public Task<JSONObject> refundPaidOrder(@NonNull String orderId,
-                                            @NonNull String zpTransId,
-                                            @NonNull String amount,
-                                            @NonNull String description) {
+
+    // 1. Call Refund API, returns m_refund_id
+    public Task<String> refundOrder(@NonNull String orderId,
+                                    @NonNull String zpTransId,
+                                    @NonNull String amount,
+                                    @NonNull String description) {
         return Tasks.call(executor, () -> {
             RefundOrder api = new RefundOrder();
-            return api.refund(zpTransId, amount, description);
-        }).continueWith(task -> {
-            if (task.isSuccessful()) {
-                JSONObject zpResponse = task.getResult();
-
-                // Nếu có lỗi từ lớp RefundOrder thì return_code nằm ở root
-                int returnCodeRoot = zpResponse.optInt("return_code", Integer.MIN_VALUE);
-                if (returnCodeRoot != Integer.MIN_VALUE) {
-                    // Đây là lỗi ngay từ đầu (input sai, ký sai, network, ...)
-                    throw new Exception("Refund API lỗi: " + zpResponse.optString("return_message"));
-                }
-
-                // Lấy phản hồi trạng thái thật sự từ ZaloPay (trong status_response)
-                JSONObject statusResponse = zpResponse.optJSONObject("status_response");
-                int returnCode = statusResponse != null ? statusResponse.optInt("return_code", -1) : -1;
-                String returnMessage = statusResponse != null ? statusResponse.optString("return_message", "Không rõ") : "Không rõ";
-                String subMessage = statusResponse != null ? statusResponse.optString("sub_return_message", "") : "";
-
-                switch (returnCode) {
-                    case 1:
-                        Log.d(TAG, "Refund thành công: " + returnMessage);
-                        break;
-                    case 2:
-                        throw new Exception("Refund thất bại: " + subMessage);
-                    case 3:
-                        throw new Exception("Refund đang xử lý: " + returnMessage);
-                    default:
-                        throw new Exception("Không xác định được trạng thái hoàn tiền.");
-                }
-
-                // Trả lại toàn bộ JSON nếu cần dùng tiếp
-                return zpResponse;
-
-            } else {
-                Exception e = task.getException();
-                Log.e(TAG, "refundPaidOrder: Gọi API lỗi", e);
-                throw new Exception("Gọi API refund thất bại", e);
+            JSONObject fullResp = api.refund(zpTransId, amount, description);
+            Log.d(TAG, "Refund API full response: " + fullResp);
+            String mRefundId = fullResp.optString("m_refund_id", null);
+            if (mRefundId == null || mRefundId.isEmpty()) {
+                throw new Exception("m_refund_id not found in refund response");
             }
+            return mRefundId;
         });
     }
 
+    // 2. Synchronous query for polling
+    public JSONObject queryRefundStatusSync(String mRefundId) throws Exception {
+        return new RefundOrder().queryRefundStatus(mRefundId);
+    }
 
+    // 3. Polling logic: update Firestore and callback
+    public void pollRefundStatus(@NonNull String orderId,
+                                 @NonNull String mRefundId,
+                                 @NonNull RefundCallback callback) {
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        final int[] attempts = {0};
+
+        Runnable task = () -> {
+            attempts[0]++;
+            try {
+                JSONObject status = queryRefundStatusSync(mRefundId);
+                int code = status.optInt("return_code", -1);
+                String subMsg = status.optString("sub_return_message", "");
+
+                switch (code) {
+                    case 1: // success
+                        scheduler.shutdown();
+                        updatePaymentStatus(orderId,
+                                Order.PaymentStatus.REFUNDED,
+                                Order.OrderStatus.REFUNDED)
+                                .addOnSuccessListener(u -> callback.onSuccess(status))
+                                .addOnFailureListener(callback::onError);
+                        break;
+                    case 2: // failed
+                        scheduler.shutdown();
+                        updatePaymentStatus(orderId,
+                                Order.PaymentStatus.REFUND_FAILED,
+                                Order.OrderStatus.REFUND_FAILED)
+                                .addOnSuccessListener(u -> callback.onFailure(subMsg))
+                                .addOnFailureListener(callback::onError);
+                        break;
+                    case 3: // pending
+                        if (attempts[0] >= MAX_POLL_ATTEMPTS) {
+                            scheduler.shutdown();
+                            updatePaymentStatus(orderId,
+                                    Order.PaymentStatus.REFUND_PENDING,
+                                    Order.OrderStatus.REFUND_PENDING)
+                                    .addOnSuccessListener(u -> callback.onTimeout("Timeout - still pending"))
+                                    .addOnFailureListener(callback::onError);
+                        }
+                        break;
+                    default:
+                        scheduler.shutdown();
+                        updatePaymentStatus(orderId,
+                                Order.PaymentStatus.REFUND_ERROR,
+                                Order.OrderStatus.REFUND_ERROR)
+                                .addOnSuccessListener(u -> callback.onFailure("Unknown status: " + code))
+                                .addOnFailureListener(callback::onError);
+                        break;
+                }
+            } catch (Exception e) {
+                scheduler.shutdown();
+                updatePaymentStatus(orderId,
+                        Order.PaymentStatus.REFUND_ERROR,
+                        Order.OrderStatus.REFUND_ERROR);
+                callback.onError(e);
+            }
+        };
+        scheduler.scheduleAtFixedRate(task, 0, POLL_INTERVAL_SEC, TimeUnit.SECONDS);
+    }
 
     /**
      * Lấy danh sách orders của user kèm items, sắp xếp theo createdAt giảm dần.
@@ -303,4 +346,12 @@ public class OrderRepository {
         void onSuccess(List<Order> orders);
         void onFailure(Exception e);
     }
+
+    public interface RefundCallback {
+        void onSuccess(JSONObject statusResp);
+        void onFailure(String message);
+        void onTimeout(String message);
+        void onError(Exception e);
+    }
+
 }

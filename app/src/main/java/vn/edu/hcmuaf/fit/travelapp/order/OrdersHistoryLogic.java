@@ -17,6 +17,7 @@ public class OrdersHistoryLogic {
         void onError(String message);
         void onCancelSuccess();
         void onRefundSuccess();
+        void onRefundPending();
     }
 
     private static final String TAG = OrdersHistoryLogic.class.getSimpleName();
@@ -67,54 +68,31 @@ public class OrdersHistoryLogic {
                 });
     }
 
-    /**
-     * Refund a paid order and update status based on ZaloPay response.
-     */
     public void refundPaidOrder(@NonNull String orderId,
                                 @NonNull String zpTransId,
                                 @NonNull String amount) {
-        repository.refundPaidOrder(orderId, zpTransId, amount, REFUND_DESCRIPTION)
-                .addOnSuccessListener(zpResp -> handleRefundResponse(zpResp))
-                .addOnFailureListener(e -> {
-                    String err = String.format("Lỗi HTTP khi hoàn tiền: %s", e.getLocalizedMessage());
-                    Log.e(TAG, err, e);
-                    callback.onError(err);
-                });
+        // Step 1: mark requested
+        repository.updatePaymentStatus(orderId,
+                        Order.PaymentStatus.REFUND_REQUESTED,
+                        Order.OrderStatus.REFUND_REQUESTED)
+                .addOnSuccessListener(u ->
+                        // Step 2: call refund to get m_refund_id
+                        repository.refundOrder(orderId, zpTransId, amount, REFUND_DESCRIPTION)
+                                .addOnSuccessListener(mRefundId -> {
+                                    Log.d(TAG, "Immediate refund accepted, m_refund_id=" + mRefundId);
+                                    // Step 3: polling
+                                    repository.pollRefundStatus(orderId, mRefundId, new OrderRepository.RefundCallback() {
+                                        @Override public void onSuccess(JSONObject status) { callback.onRefundSuccess(); }
+                                        @Override public void onFailure(String msg) { callback.onError("Hoàn tiền thất bại: " + msg); }
+                                        @Override public void onTimeout(String msg) { callback.onRefundPending(); }
+                                        @Override public void onError(Exception e) { callback.onError("Polling error: " + e.getMessage()); }
+                                    });
+                                })
+                                .addOnFailureListener(e -> callback.onError("Refund API error: " + e.getMessage()))
+                )
+                .addOnFailureListener(e -> callback.onError("Cannot set REFUND_REQUESTED"));
     }
-
-    private void handleRefundResponse(JSONObject zpResp) {
-        try {
-            JSONObject status = zpResp.optJSONObject("status_response");
-            if (status == null) {
-                callback.onError("Phản hồi từ ZaloPay không hợp lệ (thiếu status_response)");
-                return;
-            }
-
-            int returnCode = status.optInt("return_code", -1);
-            String message = status.optString("return_message", "Không rõ lý do");
-            String subMessage = status.optString("sub_return_message", "");
-
-            Log.d(TAG, String.format("ZaloPay refund → return_code=%d, message=%s", returnCode, message));
-
-            switch (returnCode) {
-                case 1:
-                    callback.onRefundSuccess();
-                    break;
-                case 2:
-                    callback.onError("Hoàn tiền thất bại: " + subMessage);
-                    break;
-                case 3:
-                    callback.onError("Hoàn tiền đang xử lý, thử lại sau.");
-                    break;
-                default:
-                    callback.onError("Không xác định được trạng thái hoàn tiền.");
-                    break;
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "Lỗi xử lý phản hồi hoàn tiền", e);
-            callback.onError("Lỗi định dạng phản hồi từ ZaloPay");
-        }
-    }
-
 }
+
+
+
