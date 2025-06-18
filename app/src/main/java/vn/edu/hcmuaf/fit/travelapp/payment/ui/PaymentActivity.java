@@ -59,7 +59,7 @@ public class PaymentActivity extends AppCompatActivity {
         totalString = String.format("%.0f", totalPrice);
     }
 
-
+    // Set data into view
     private void setVariable() {
         binding.titleTxt.setText(product.getName());
         binding.priceTxt.setText(product.getPrice() + "đ");
@@ -150,6 +150,7 @@ public class PaymentActivity extends AppCompatActivity {
                         .addOnSuccessListener(unused -> Log.d("ZaloPay", "Order info updated"))
                         .addOnFailureListener(e -> Log.e("ZaloPay", "Failed to update Firestore", e));
 
+                // call api zalopay
                 ZaloPaySDK.getInstance().payOrder(PaymentActivity.this, token, "demozpdk://app", new PayOrderListener() {
                     @Override
                     public void onPaymentSucceeded(String transactionId, String transToken, String appTransID) {
