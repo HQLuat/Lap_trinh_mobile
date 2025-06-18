@@ -120,7 +120,12 @@ public class UserRepository {
                                 .addOnSuccessListener(documentSnapshot -> {
                                     if (documentSnapshot.exists()) {
                                         User user = documentSnapshot.toObject(User.class);
-                                        listener.onSuccess(user);
+
+                                        if (user != null && user.isActive() && !user.isDeleted()) {
+                                            listener.onSuccess(user);
+                                        } else {
+                                            listener.onFailure("Your account is deactivated or has been deleted");
+                                        }
                                     } else {
                                         listener.onFailure("User document not found in database.");
                                     }

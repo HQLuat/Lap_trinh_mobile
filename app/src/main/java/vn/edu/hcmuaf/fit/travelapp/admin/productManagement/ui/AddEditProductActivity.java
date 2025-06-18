@@ -119,9 +119,10 @@ public class AddEditProductActivity extends AppCompatActivity {
             String description = binding.etProductDescription.getText().toString();
             double price = Double.parseDouble(binding.etProductPrice.getText().toString());
             int stock = Integer.parseInt(binding.etProductStock.getText().toString());
+            String address = binding.etProductAddress.getText().toString();
 
             Timestamp departureDate = new Timestamp(departureCalendar.getTime());
-            product = new Product(name, description, price, "", stock, departureDate, "abc");
+            product = new Product(name, description, price, "", stock, departureDate, address);
 
 
         } catch (NumberFormatException e) {
@@ -218,6 +219,7 @@ public class AddEditProductActivity extends AppCompatActivity {
         Log.d("populateForm", "populateForm");
         binding.etProductName.setText(product.getName());
         binding.etProductDescription.setText(product.getDescription());
+        binding.etProductAddress.setText(product.getAddress());
         binding.etProductPrice.setText(String.valueOf(product.getPrice()));
         binding.etProductStock.setText(String.valueOf(product.getStock()));
 

@@ -50,6 +50,12 @@
             android:scrollHorizontally="false" />
 
         <EditText
+            android:id="@+id/et_product_address"
+            style="@style/StyledEditText"
+            android:hint="Địa chỉ"
+            android:inputType="text" />
+
+        <EditText
             android:id="@+id/et_product_price"
             style="@style/StyledEditText"
             android:hint="Giá"
